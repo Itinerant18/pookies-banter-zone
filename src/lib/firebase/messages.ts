@@ -1,4 +1,3 @@
-
 import { collection, doc, addDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp, getDocs, setDoc, Timestamp } from 'firebase/firestore';
 import { db } from './config';
 
@@ -14,14 +13,21 @@ export interface Message {
 
 export const sendMessage = async (chatRoomId: string, senderId: string, message: string) => {
   try {
+    console.log(`Sending message to room ${chatRoomId} from user ${senderId}: ${message}`);
+    
+    // Create a timestamp on the client side for immediate use
+    const clientTimestamp = new Date();
+    
     // Add message to messages collection
     const messageData: Omit<Message, 'id'> = {
       chatRoomId,
       senderId,
       message,
-      timestamp: serverTimestamp(),
+      timestamp: serverTimestamp(), // Server timestamp for consistency
       status: 'sent' // Now using literal string 'sent' instead of a generic string
     };
+    
+    console.log("Message data being sent:", messageData);
     
     // Add the message document
     const messageRef = await addDoc(collection(db, "messages"), messageData);
@@ -34,6 +40,7 @@ export const sendMessage = async (chatRoomId: string, senderId: string, message:
       lastMessageSenderId: senderId
     });
     
+    // Return the message ID
     return messageRef.id;
   } catch (error) {
     console.error("Error sending message: ", error);
@@ -89,8 +96,18 @@ export const subscribeToMessages = (chatRoomId: string, callback: (messages: Mes
     
     // Set up the real-time listener first
     const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
+      console.log(`Snapshot received: ${snapshot.docs.length} documents`);
+      console.log(`Snapshot metadata: fromCache=${snapshot.metadata.fromCache}, hasPendingWrites=${snapshot.metadata.hasPendingWrites}`);
+      
+      // Check if the snapshot is from cache and has no pending writes
+      if (snapshot.metadata.fromCache && !snapshot.metadata.hasPendingWrites) {
+        console.log("Warning: Data is from cache only, might not be up-to-date");
+      }
+      
       const messages = snapshot.docs.map(doc => {
         const data = doc.data();
+        console.log(`Message data for ${doc.id}:`, data);
+        
         // Ensure status is one of the valid types
         let status: 'sending' | 'sent' | 'delivered' | 'read' = 'sent';
         if (data.status && ['sending', 'sent', 'delivered', 'read'].includes(data.status)) {

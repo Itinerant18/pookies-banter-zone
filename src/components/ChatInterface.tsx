@@ -105,8 +105,16 @@ const ChatInterface: React.FC = () => {
     
     console.log("Subscribing to messages in room:", chatRoomId);
     const unsubscribe = subscribeToMessages(chatRoomId, (newMessages) => {
-      setMessages(newMessages);
-      console.log("New messages:", newMessages.length);
+      console.log("Message update received, count:", newMessages.length);
+      
+      // Important: Use a functional update to avoid race conditions
+      setMessages(current => {
+        // Only update if the new messages array has different content
+        if (JSON.stringify(current) !== JSON.stringify(newMessages)) {
+          return newMessages;
+        }
+        return current;
+      });
       
       // If we received messages successfully, clear any indexing error
       if (indexingError && newMessages.length > 0) {
@@ -120,21 +128,14 @@ const ChatInterface: React.FC = () => {
     };
   }, [chatRoomId, indexingError]);
 
-  // Find a match on first load
-  useEffect(() => {
-    if (user) {
-      console.log("User authenticated, finding initial match");
-      findRandomMatch();
-    }
-  }, [user]);
-
   // Handle sending a message
   const handleSendMessage = async (message: string) => {
     if (!user || !chatRoomId) return;
     
     try {
       console.log("Sending message:", message);
-      await sendMessage(chatRoomId, user.uid, message);
+      const messageId = await sendMessage(chatRoomId, user.uid, message);
+      console.log("Message sent with ID:", messageId);
     } catch (error: any) {
       console.error('Error sending message:', error);
       toast({

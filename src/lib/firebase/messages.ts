@@ -1,5 +1,5 @@
 
-import { collection, doc, addDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, addDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp, getDocs } from 'firebase/firestore';
 import { db } from './config';
 
 export const sendMessage = async (chatRoomId: string, senderId: string, message: string) => {
@@ -12,13 +12,17 @@ export const sendMessage = async (chatRoomId: string, senderId: string, message:
       timestamp: serverTimestamp()
     };
     
-    await addDoc(collection(db, "messages"), messageData);
+    // Add the message document
+    const messageRef = await addDoc(collection(db, "messages"), messageData);
+    console.log("Message sent with ID:", messageRef.id);
     
     // Update chat room with last message
     await updateDoc(doc(db, "chatRooms", chatRoomId), {
       lastMessage: message,
       lastMessageTime: serverTimestamp()
     });
+    
+    return messageRef.id;
   } catch (error) {
     console.error("Error sending message: ", error);
     throw error;
@@ -27,6 +31,8 @@ export const sendMessage = async (chatRoomId: string, senderId: string, message:
 
 export const subscribeToMessages = (chatRoomId: string, callback: (messages: any[]) => void) => {
   try {
+    console.log(`Setting up subscription for chat room: ${chatRoomId}`);
+    
     // Create query for messages in this chat room, ordered by timestamp
     const messagesQuery = query(
       collection(db, "messages"),
@@ -34,13 +40,28 @@ export const subscribeToMessages = (chatRoomId: string, callback: (messages: any
       orderBy("timestamp", "asc")
     );
     
-    // Listen for updates
+    // First get existing messages once
+    getDocs(messagesQuery)
+      .then((snapshot) => {
+        const messages = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        console.log(`Initial load: Found ${messages.length} messages for room ${chatRoomId}`);
+        callback(messages);
+      })
+      .catch((error) => {
+        console.error("Error fetching initial messages:", error);
+      });
+    
+    // Then listen for updates
     return onSnapshot(messagesQuery, (snapshot) => {
       const messages = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
       
+      console.log(`Live update: Received ${messages.length} messages for room ${chatRoomId}`);
       callback(messages);
     }, (error) => {
       console.error("Error in messages subscription:", error);

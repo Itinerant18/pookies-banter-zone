@@ -153,22 +153,47 @@ export const uploadUserPhoto = async (user: User, file: File) => {
 // Chat Functions
 export const findRandomUser = async (currentUserId: string) => {
   try {
-    // Query all users except current user
+    console.log("Starting to find random user, current user ID:", currentUserId);
+    
+    // First, make sure we're populating users collection
+    // Check if the current user exists in the users collection
+    const currentUserDoc = await getDoc(doc(db, "users", currentUserId));
+    if (!currentUserDoc.exists()) {
+      // Create user document if it doesn't exist
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        await setDoc(doc(db, "users", currentUserId), {
+          uid: currentUserId,
+          name: currentUser.displayName || "Anonymous",
+          email: currentUser.email,
+          photoURL: currentUser.photoURL,
+          createdAt: serverTimestamp(),
+          status: "online"
+        });
+        console.log("Created user document for current user");
+      }
+    }
+    
+    // Get all users except the current user
     const usersQuery = query(
       collection(db, "users"),
-      where("uid", "!=", currentUserId),
-      where("status", "==", "online")
+      where("uid", "!=", currentUserId)
     );
     
+    console.log("Executing query to find users");
     const snapshot = await getDocs(usersQuery);
     
     if (snapshot.empty) {
+      console.log("No users found");
       return null;
     }
     
     // Get random user from results
     const users = snapshot.docs.map(doc => doc.data());
+    console.log(`Found ${users.length} users:`, users);
+    
     const randomUser = users[Math.floor(Math.random() * users.length)];
+    console.log("Selected random user:", randomUser);
     
     return randomUser;
   } catch (error) {

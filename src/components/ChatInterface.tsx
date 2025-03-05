@@ -8,13 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, RefreshCw, Loader2 } from 'lucide-react';
+import { Send, RefreshCw, Loader2, AlertTriangle, Check } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 const ChatInterface: React.FC = () => {
   const [user] = useAuthState(auth);
   const [matchedUser, setMatchedUser] = useState<any>(null);
   const [finding, setFinding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [chatRoomId, setChatRoomId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -28,6 +29,7 @@ const ChatInterface: React.FC = () => {
     
     try {
       setFinding(true);
+      setError(null);
       setMatchedUser(null);
       setChatRoomId(null);
       setMessages([]);
@@ -38,22 +40,30 @@ const ChatInterface: React.FC = () => {
       if (!randomUser) {
         toast({
           title: 'No users available',
-          description: 'Please try again later when more users are online',
+          description: 'Please wait for more users to join, or invite friends to create an account!',
           variant: 'destructive',
         });
+        setError('No users available. Try again later when more users are online.');
         return;
       }
+      
+      toast({
+        title: 'Match found!',
+        description: `You're now chatting with ${randomUser.name || 'Anonymous'}`,
+        variant: 'default',
+      });
       
       // Create a chat room
       const roomId = await createChatRoom(user.uid, randomUser.uid);
       
       setMatchedUser(randomUser);
       setChatRoomId(roomId);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error finding match:', error);
+      setError(error.message || 'Error finding match. Please try again later.');
       toast({
         title: 'Error finding match',
-        description: 'Please try again later',
+        description: 'Please check the Firebase rules or try again later',
         variant: 'destructive',
       });
     } finally {
@@ -94,11 +104,11 @@ const ChatInterface: React.FC = () => {
       setSending(true);
       await sendMessage(chatRoomId, user.uid, newMessage.trim());
       setNewMessage('');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
       toast({
         title: 'Error sending message',
-        description: 'Please try again',
+        description: error.message || 'Please try again',
         variant: 'destructive',
       });
     } finally {
@@ -113,6 +123,15 @@ const ChatInterface: React.FC = () => {
           <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
           <h3 className="text-xl font-medium">Finding someone to chat with...</h3>
           <p className="text-muted-foreground mt-2">This might take a moment</p>
+        </div>
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center h-64">
+          <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+          <h3 className="text-xl font-medium mb-2">We encountered a problem</h3>
+          <p className="text-muted-foreground text-center mb-6">{error}</p>
+          <Button onClick={findRandomMatch} size="lg" className="animate-enter">
+            Try Again
+          </Button>
         </div>
       ) : !matchedUser ? (
         <div className="flex flex-col items-center justify-center h-64">
@@ -132,8 +151,11 @@ const ChatInterface: React.FC = () => {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <h3 className="text-lg font-medium">{matchedUser.name}</h3>
-                <p className="text-sm text-muted-foreground">You are now chatting</p>
+                <h3 className="text-lg font-medium">{matchedUser.name || 'Anonymous'}</h3>
+                <div className="flex items-center text-xs text-green-500">
+                  <Check className="w-3 h-3 mr-1" />
+                  <span>Online now</span>
+                </div>
               </div>
               <Button 
                 variant="outline" 

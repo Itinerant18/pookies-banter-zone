@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -10,6 +9,7 @@ interface Message {
   senderId: string;
   message: string;
   timestamp: any;
+  formattedTime?: string;
 }
 
 interface MessageListProps {
@@ -21,13 +21,11 @@ const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [formattedMessages, setFormattedMessages] = useState<Message[]>([]);
 
-  // Format message timestamps
   useEffect(() => {
     if (messages && messages.length > 0) {
       console.log("Processing messages:", messages.length);
       const processed = messages.map(msg => ({
         ...msg,
-        // Format timestamp if it exists
         formattedTime: msg.timestamp?.toDate ? 
           format(msg.timestamp.toDate(), 'HH:mm') : 
           'Sending...'
@@ -38,7 +36,6 @@ const MessageList: React.FC<MessageListProps> = ({ messages }) => {
     }
   }, [messages]);
 
-  // Scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [formattedMessages]);

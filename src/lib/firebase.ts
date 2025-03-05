@@ -4,11 +4,12 @@ import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPas
 import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, onSnapshot, addDoc, updateDoc, serverTimestamp, orderBy, limit } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
+// Firebase configuration - updated with valid config
 const firebaseConfig = {
   apiKey: "AIzaSyCLP5GN7OR14sz0FdRNxjEe2XdfzHfmIV8",
   authDomain: "dating-a8002.firebaseapp.com",
   projectId: "dating-a8002",
-  storageBucket: "dating-a8002.firebasestorage.app",
+  storageBucket: "dating-a8002.appspot.com", // Fixed storage bucket URL
   messagingSenderId: "291771680647",
   appId: "1:291771680647:web:82daa6194e025ec4a4b522",
   measurementId: "G-ZZBQ16W7TB"

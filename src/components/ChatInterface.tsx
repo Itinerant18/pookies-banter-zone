@@ -34,39 +34,57 @@ const ChatInterface: React.FC = () => {
       setMessages([]);
       
       console.log("Starting to find a match...");
-      // Find a random user
-      const randomUser = await findRandomUser(user.uid);
+      console.log("Current user ID:", user.uid);
       
-      if (!randomUser) {
-        console.log("No users available");
+      // Check if user exists in Firestore
+      try {
+        // Find a random user
+        const randomUser = await findRandomUser(user.uid);
+        
+        if (!randomUser) {
+          console.log("No users available");
+          toast({
+            title: 'No users available',
+            description: 'Please wait for more users to join, or invite friends to create an account!',
+            variant: 'destructive',
+          });
+          setError('No users available. Try again later when more users are online.');
+          return;
+        }
+        
+        console.log("Match found:", randomUser);
         toast({
-          title: 'No users available',
-          description: 'Please wait for more users to join, or invite friends to create an account!',
-          variant: 'destructive',
+          title: 'Match found!',
+          description: `You're now chatting with ${randomUser.name || 'Anonymous'}`,
+          variant: 'default',
         });
-        setError('No users available. Try again later when more users are online.');
-        return;
+        
+        // Create a chat room
+        const roomId = await createChatRoom(user.uid, randomUser.uid);
+        console.log("Chat room created with ID:", roomId);
+        
+        setMatchedUser(randomUser);
+        setChatRoomId(roomId);
+      } catch (innerError: any) {
+        console.error('Inner error during matching:', innerError);
+        throw innerError;
       }
-      
-      console.log("Match found:", randomUser);
-      toast({
-        title: 'Match found!',
-        description: `You're now chatting with ${randomUser.name || 'Anonymous'}`,
-        variant: 'default',
-      });
-      
-      // Create a chat room
-      const roomId = await createChatRoom(user.uid, randomUser.uid);
-      console.log("Chat room created with ID:", roomId);
-      
-      setMatchedUser(randomUser);
-      setChatRoomId(roomId);
     } catch (error: any) {
       console.error('Error finding match:', error);
-      setError(error.message || 'Error finding match. Please check the Firebase rules and try again later.');
+      let errorMessage = error.message || 'Unknown error occurred';
+      
+      // More specific error messages
+      if (errorMessage.includes('permission-denied')) {
+        errorMessage = 'Firebase permission denied. Please check that you\'ve updated the Firestore rules correctly and try again.';
+      } else if (errorMessage.includes('not-found')) {
+        errorMessage = 'User document not found. Please make sure your user account is correctly set up.';
+      }
+      
+      console.log("Detailed error:", JSON.stringify(error));
+      setError(errorMessage);
       toast({
         title: 'Error finding match',
-        description: 'Please check the Firebase rules or try again later',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {

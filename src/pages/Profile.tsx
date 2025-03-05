@@ -3,15 +3,15 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
-import OnboardingScreen from '@/components/OnboardingScreen';
+import ProfileSettings from '@/components/ProfileSettings';
 
-const Index = () => {
+const Profile = () => {
   const [user, loading] = useAuthState(auth);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && user) {
-      navigate('/chat');
+    if (!loading && !user) {
+      navigate('/');
     }
   }, [user, loading, navigate]);
 
@@ -26,7 +26,11 @@ const Index = () => {
     );
   }
 
-  return <OnboardingScreen />;
+  if (!user) {
+    return null;
+  }
+
+  return <ProfileSettings />;
 };
 
-export default Index;
+export default Profile;

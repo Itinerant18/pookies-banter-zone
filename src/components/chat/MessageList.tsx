@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -55,16 +56,28 @@ const MessageList: React.FC<MessageListProps> = ({
   useEffect(() => {
     if (messages && messages.length > 0) {
       console.log("Processing messages:", messages.length);
-      const processed = messages.map(msg => ({
-        ...msg,
-        formattedTime: msg.timestamp?.toDate ? 
-          format(msg.timestamp.toDate(), 'HH:mm') : 
-          'Sending...',
-        // Add read status - ensure it's one of the allowed values
-        status: msg.senderId === user?.uid ? 
-          (msg.status as 'sending' | 'sent' | 'delivered' | 'read' || 'sent') : 
-          undefined
-      }));
+      const processed = messages.map(msg => {
+        // Ensure status is one of the allowed values
+        let status: 'sending' | 'sent' | 'delivered' | 'read' | undefined;
+        
+        if (msg.senderId === user?.uid) {
+          // For messages sent by the current user
+          if (msg.status && ['sending', 'sent', 'delivered', 'read'].includes(msg.status as string)) {
+            status = msg.status as 'sending' | 'sent' | 'delivered' | 'read';
+          } else {
+            status = 'sent'; // Default status for sent messages
+          }
+        }
+        
+        return {
+          ...msg,
+          formattedTime: msg.timestamp?.toDate ? 
+            format(msg.timestamp.toDate(), 'HH:mm') : 
+            'Sending...',
+          status
+        };
+      });
+      
       setFormattedMessages(processed);
       
       // Set last message as read if it's from the other user

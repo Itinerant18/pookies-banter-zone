@@ -1,3 +1,4 @@
+
 import { collection, doc, addDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp, getDocs, setDoc } from 'firebase/firestore';
 import { db } from './config';
 
@@ -81,7 +82,9 @@ export const subscribeToMessages = (chatRoomId: string, callback: (messages: any
       .then((snapshot) => {
         const messages = snapshot.docs.map(doc => ({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
+          // Ensure status is one of the valid types
+          status: doc.data().status || 'sent'
         }));
         console.log(`Initial load: Found ${messages.length} messages for room ${chatRoomId}`);
         callback(messages);
@@ -92,10 +95,15 @@ export const subscribeToMessages = (chatRoomId: string, callback: (messages: any
     
     // Then listen for updates
     return onSnapshot(messagesQuery, (snapshot) => {
-      const messages = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const messages = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          // Ensure status is one of the valid types
+          status: data.status || 'sent'
+        };
+      });
       
       console.log(`Live update: Received ${messages.length} messages for room ${chatRoomId}`);
       callback(messages);

@@ -33,10 +33,12 @@ const ChatInterface: React.FC = () => {
       setChatRoomId(null);
       setMessages([]);
       
+      console.log("Starting to find a match...");
       // Find a random user
       const randomUser = await findRandomUser(user.uid);
       
       if (!randomUser) {
+        console.log("No users available");
         toast({
           title: 'No users available',
           description: 'Please wait for more users to join, or invite friends to create an account!',
@@ -46,6 +48,7 @@ const ChatInterface: React.FC = () => {
         return;
       }
       
+      console.log("Match found:", randomUser);
       toast({
         title: 'Match found!',
         description: `You're now chatting with ${randomUser.name || 'Anonymous'}`,
@@ -54,12 +57,13 @@ const ChatInterface: React.FC = () => {
       
       // Create a chat room
       const roomId = await createChatRoom(user.uid, randomUser.uid);
+      console.log("Chat room created with ID:", roomId);
       
       setMatchedUser(randomUser);
       setChatRoomId(roomId);
     } catch (error: any) {
       console.error('Error finding match:', error);
-      setError(error.message || 'Error finding match. Please try again later.');
+      setError(error.message || 'Error finding match. Please check the Firebase rules and try again later.');
       toast({
         title: 'Error finding match',
         description: 'Please check the Firebase rules or try again later',
@@ -74,16 +78,22 @@ const ChatInterface: React.FC = () => {
   useEffect(() => {
     if (!chatRoomId) return;
     
+    console.log("Subscribing to messages in room:", chatRoomId);
     const unsubscribe = subscribeToMessages(chatRoomId, (newMessages) => {
       setMessages(newMessages);
+      console.log("New messages:", newMessages.length);
     });
     
-    return () => unsubscribe();
+    return () => {
+      console.log("Unsubscribing from messages");
+      unsubscribe();
+    };
   }, [chatRoomId]);
 
   // Find a match on first load
   useEffect(() => {
     if (user) {
+      console.log("User authenticated, finding initial match");
       findRandomMatch();
     }
   }, [user]);
@@ -93,6 +103,7 @@ const ChatInterface: React.FC = () => {
     if (!user || !chatRoomId) return;
     
     try {
+      console.log("Sending message:", message);
       await sendMessage(chatRoomId, user.uid, message);
     } catch (error: any) {
       console.error('Error sending message:', error);

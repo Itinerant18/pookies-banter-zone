@@ -2,6 +2,7 @@
 import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface ErrorStateProps {
   error: string;
@@ -14,6 +15,12 @@ const ErrorState: React.FC<ErrorStateProps> = ({ error, onRetry }) => {
       <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
       <h3 className="text-xl font-medium mb-2">We encountered a problem</h3>
       <p className="text-muted-foreground text-center mb-6">{error}</p>
+      <Alert variant="destructive" className="mb-4 max-w-md">
+        <AlertTitle>Firebase Permission Error</AlertTitle>
+        <AlertDescription>
+          This is likely due to missing Firebase security rules. Please check the Firebase console and update the rules.
+        </AlertDescription>
+      </Alert>
       <Button onClick={onRetry} size="lg" className="animate-enter">
         Try Again
       </Button>

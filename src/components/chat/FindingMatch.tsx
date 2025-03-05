@@ -8,6 +8,9 @@ const FindingMatch: React.FC = () => {
       <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
       <h3 className="text-xl font-medium">Finding someone to chat with...</h3>
       <p className="text-muted-foreground mt-2">This might take a moment</p>
+      <p className="text-muted-foreground text-xs mt-4">
+        If this takes too long, there might be an issue with Firebase permissions.
+      </p>
     </div>
   );
 };

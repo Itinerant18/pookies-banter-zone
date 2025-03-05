@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -55,7 +54,7 @@ const MessageList: React.FC<MessageListProps> = ({
 
   useEffect(() => {
     if (messages && messages.length > 0) {
-      console.log("Processing messages:", messages.length);
+      console.log("Processing messages in MessageList:", messages.length, messages);
       const processed = messages.map(msg => {
         // Ensure status is one of the allowed values
         let status: 'sending' | 'sent' | 'delivered' | 'read' | undefined;
@@ -150,37 +149,39 @@ const MessageList: React.FC<MessageListProps> = ({
         </div>
       ) : (
         <div className="space-y-4">
-          {dates.map(date => (
-            <div key={date}>
-              {renderDateHeader(date)}
-              <div className="space-y-4">
-                {messageGroups[date].map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${
-                      msg.senderId === user?.uid ? 'justify-end' : 'justify-start'
-                    }`}
-                  >
-                    <div className="flex flex-col">
-                      <div
-                        className={`max-w-[75%] px-4 py-2 rounded-lg ${
-                          msg.senderId === user?.uid
-                            ? 'bg-primary text-primary-foreground rounded-br-none'
-                            : 'bg-secondary text-secondary-foreground rounded-bl-none'
-                        }`}
-                      >
-                        {msg.message}
-                      </div>
-                      <div className="flex justify-between items-center text-xs text-muted-foreground mt-1 px-2">
-                        <span>{msg.formattedTime}</span>
-                        {getReadStatus(msg)}
+          {Object.keys(groupMessagesByDate(formattedMessages))
+            .sort()
+            .map(date => (
+              <div key={date}>
+                {renderDateHeader(date)}
+                <div className="space-y-4">
+                  {groupMessagesByDate(formattedMessages)[date].map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`flex ${
+                        msg.senderId === user?.uid ? 'justify-end' : 'justify-start'
+                      }`}
+                    >
+                      <div className="flex flex-col">
+                        <div
+                          className={`max-w-[75%] px-4 py-2 rounded-lg ${
+                            msg.senderId === user?.uid
+                              ? 'bg-primary text-primary-foreground rounded-br-none'
+                              : 'bg-secondary text-secondary-foreground rounded-bl-none'
+                          }`}
+                        >
+                          {msg.message}
+                        </div>
+                        <div className="flex justify-between items-center text-xs text-muted-foreground mt-1 px-2">
+                          <span>{msg.formattedTime}</span>
+                          {getReadStatus(msg)}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
           
           {isTyping && recipientId && (
             <div className="flex justify-start">

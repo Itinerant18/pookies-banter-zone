@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db, findRandomUser, createChatRoom, sendMessage, subscribeToMessages, updateTypingStatus, subscribeToTypingStatus } from '@/lib/firebase';
@@ -106,16 +105,8 @@ const ChatInterface: React.FC = () => {
     
     console.log("Subscribing to messages in room:", chatRoomId);
     const unsubscribe = subscribeToMessages(chatRoomId, (newMessages) => {
-      console.log("Message update received, count:", newMessages.length);
-      
-      // Important: Use a functional update to avoid race conditions
-      setMessages(current => {
-        // Only update if the new messages array has different content
-        if (JSON.stringify(current) !== JSON.stringify(newMessages)) {
-          return newMessages;
-        }
-        return current;
-      });
+      console.log("Message update received, count:", newMessages.length, newMessages);
+      setMessages(newMessages);
       
       // If we received messages successfully, clear any indexing error
       if (indexingError && newMessages.length > 0) {

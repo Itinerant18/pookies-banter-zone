@@ -80,13 +80,17 @@ export const subscribeToMessages = (chatRoomId: string, callback: (messages: any
     // First get existing messages once
     getDocs(messagesQuery)
       .then((snapshot) => {
-        const messages = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          // Ensure status is one of the valid types
-          status: doc.data().status || 'sent'
-        }));
+        const messages = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            // Ensure status is one of the valid types
+            status: data.status || 'sent'
+          };
+        });
         console.log(`Initial load: Found ${messages.length} messages for room ${chatRoomId}`);
+        console.log("Message data:", messages);
         callback(messages);
       })
       .catch((error) => {
@@ -106,6 +110,7 @@ export const subscribeToMessages = (chatRoomId: string, callback: (messages: any
       });
       
       console.log(`Live update: Received ${messages.length} messages for room ${chatRoomId}`);
+      console.log("Live message data:", messages);
       callback(messages);
     }, (error) => {
       console.error("Error in messages subscription:", error);

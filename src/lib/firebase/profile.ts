@@ -30,6 +30,7 @@ export const getUserProfile = async (userId: string): Promise<UserProfile | null
 
 export const updateUserProfile = async (user: User, data: { displayName?: string, photoURL?: string | null }) => {
   try {
+    console.log("Updating auth profile with:", data);
     // Update auth profile
     await updateProfile(user, data);
     
@@ -38,7 +39,10 @@ export const updateUserProfile = async (user: User, data: { displayName?: string
     if (data.displayName) updateData.name = data.displayName;
     if (data.photoURL !== undefined) updateData.photoURL = data.photoURL;
     
+    console.log("Updating Firestore profile with:", updateData);
     await updateDoc(doc(db, "users", user.uid), updateData);
+    
+    console.log("Profile updated successfully");
   } catch (error) {
     console.error("Error updating profile: ", error);
     throw error;
@@ -47,10 +51,24 @@ export const updateUserProfile = async (user: User, data: { displayName?: string
 
 export const updateCompleteUserProfile = async (user: User, profileData: UserProfile) => {
   try {
-    // Update firestore profile with all fields
-    await updateDoc(doc(db, "users", user.uid), {
-      ...profileData
-    });
+    console.log("Updating complete profile with data:", profileData);
+    
+    // First check if the user document exists
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    
+    if (userDoc.exists()) {
+      // Update existing document
+      await updateDoc(doc(db, "users", user.uid), {
+        ...profileData
+      });
+    } else {
+      // Create new document if it doesn't exist
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        ...profileData,
+        createdAt: new Date()
+      });
+    }
     
     // If there's a name change, update auth profile as well
     if (profileData.name && profileData.name !== user.displayName) {
@@ -59,6 +77,7 @@ export const updateCompleteUserProfile = async (user: User, profileData: UserPro
       });
     }
     
+    console.log("Complete profile updated successfully");
     return true;
   } catch (error) {
     console.error("Error updating complete profile: ", error);

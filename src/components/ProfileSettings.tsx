@@ -207,6 +207,8 @@ const ProfileSettings: React.FC = () => {
         interests: interests
       };
       
+      console.log("Updating profile with data:", profileData);
+      
       // Update profile in Firestore
       await updateCompleteUserProfile(user, profileData);
       

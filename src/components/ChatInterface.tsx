@@ -105,7 +105,8 @@ const ChatInterface: React.FC = () => {
     
     console.log("Subscribing to messages in room:", chatRoomId);
     const unsubscribe = subscribeToMessages(chatRoomId, (newMessages) => {
-      console.log("Message update received, count:", newMessages.length, newMessages);
+      console.log("Message update received, count:", newMessages.length);
+      // Use direct assignment instead of functional update to ensure we always get fresh data
       setMessages(newMessages);
       
       // If we received messages successfully, clear any indexing error

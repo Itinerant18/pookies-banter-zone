@@ -1,16 +1,13 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { format } from 'date-fns';
+import { Message } from '@/lib/firebase/messages';
 
-interface Message {
-  id: string;
-  senderId: string;
-  message: string;
-  timestamp: any;
+interface FormattedMessage extends Message {
   formattedTime?: string;
-  status?: 'sending' | 'sent' | 'delivered' | 'read';
 }
 
 interface MessageListProps {
@@ -26,12 +23,12 @@ const MessageList: React.FC<MessageListProps> = ({
 }) => {
   const [user] = useAuthState(auth);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [formattedMessages, setFormattedMessages] = useState<Message[]>([]);
+  const [formattedMessages, setFormattedMessages] = useState<FormattedMessage[]>([]);
   const [lastReadMessageId, setLastReadMessageId] = useState<string | null>(null);
 
   // Group messages by date
-  const groupMessagesByDate = (msgs: Message[]) => {
-    const groups: { [date: string]: Message[] } = {};
+  const groupMessagesByDate = (msgs: FormattedMessage[]) => {
+    const groups: { [date: string]: FormattedMessage[] } = {};
     
     msgs.forEach(msg => {
       if (msg.timestamp?.toDate) {
@@ -56,24 +53,11 @@ const MessageList: React.FC<MessageListProps> = ({
     if (messages && messages.length > 0) {
       console.log("Processing messages in MessageList:", messages.length, messages);
       const processed = messages.map(msg => {
-        // Ensure status is one of the allowed values
-        let status: 'sending' | 'sent' | 'delivered' | 'read' | undefined;
-        
-        if (msg.senderId === user?.uid) {
-          // For messages sent by the current user
-          if (msg.status && ['sending', 'sent', 'delivered', 'read'].includes(msg.status as string)) {
-            status = msg.status as 'sending' | 'sent' | 'delivered' | 'read';
-          } else {
-            status = 'sent'; // Default status for sent messages
-          }
-        }
-        
         return {
           ...msg,
           formattedTime: msg.timestamp?.toDate ? 
             format(msg.timestamp.toDate(), 'HH:mm') : 
-            'Sending...',
-          status
+            'Sending...'
         };
       });
       
@@ -97,7 +81,7 @@ const MessageList: React.FC<MessageListProps> = ({
   const messageGroups = groupMessagesByDate(formattedMessages);
   const dates = Object.keys(messageGroups).sort();
 
-  const getReadStatus = (message: Message) => {
+  const getReadStatus = (message: FormattedMessage) => {
     if (message.senderId !== user?.uid) return null;
     
     switch (message.status) {

@@ -1,11 +1,21 @@
 
-import { collection, doc, addDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp, getDocs, setDoc } from 'firebase/firestore';
+import { collection, doc, addDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp, getDocs, setDoc, Timestamp } from 'firebase/firestore';
 import { db } from './config';
+
+// Define a Message type to ensure consistent handling
+export interface Message {
+  id?: string;
+  chatRoomId: string;
+  senderId: string;
+  message: string;
+  timestamp: any;
+  status: 'sending' | 'sent' | 'delivered' | 'read';
+}
 
 export const sendMessage = async (chatRoomId: string, senderId: string, message: string) => {
   try {
     // Add message to messages collection
-    const messageData = {
+    const messageData: Omit<Message, 'id'> = {
       chatRoomId,
       senderId,
       message,
@@ -66,7 +76,7 @@ export const subscribeToTypingStatus = (chatRoomId: string, userId: string, call
   }
 };
 
-export const subscribeToMessages = (chatRoomId: string, callback: (messages: any[]) => void) => {
+export const subscribeToMessages = (chatRoomId: string, callback: (messages: Message[]) => void) => {
   try {
     console.log(`Setting up subscription for chat room: ${chatRoomId}`);
     
@@ -77,36 +87,21 @@ export const subscribeToMessages = (chatRoomId: string, callback: (messages: any
       orderBy("timestamp", "asc")
     );
     
-    // First get existing messages once
-    getDocs(messagesQuery)
-      .then((snapshot) => {
-        const messages = snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            ...data,
-            // Ensure status is one of the valid types
-            status: data.status || 'sent'
-          };
-        });
-        console.log(`Initial load: Found ${messages.length} messages for room ${chatRoomId}`);
-        console.log("Message data:", messages);
-        callback(messages);
-      })
-      .catch((error) => {
-        console.error("Error fetching initial messages:", error);
-      });
-    
-    // Then listen for updates
-    return onSnapshot(messagesQuery, (snapshot) => {
+    // Set up the real-time listener first
+    const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
       const messages = snapshot.docs.map(doc => {
         const data = doc.data();
+        // Ensure status is one of the valid types
+        let status: 'sending' | 'sent' | 'delivered' | 'read' = 'sent';
+        if (data.status && ['sending', 'sent', 'delivered', 'read'].includes(data.status)) {
+          status = data.status as 'sending' | 'sent' | 'delivered' | 'read';
+        }
+        
         return {
           id: doc.id,
           ...data,
-          // Ensure status is one of the valid types
-          status: data.status || 'sent'
-        };
+          status
+        } as Message;
       });
       
       console.log(`Live update: Received ${messages.length} messages for room ${chatRoomId}`);
@@ -127,15 +122,16 @@ export const subscribeToMessages = (chatRoomId: string, callback: (messages: any
              - Collection: messages
              - Fields to index: chatRoomId (Ascending), timestamp (Ascending)
         `);
-        
-        // Return empty array temporarily while index is being created
-        callback([]);
       } else {
         // For other errors, still provide empty array but log the full error
         console.error("Detailed error in messages subscription:", error);
-        callback([]);
       }
+      
+      // Return empty array as a fallback
+      callback([]);
     });
+    
+    return unsubscribe;
   } catch (error) {
     console.error("Error setting up message subscription:", error);
     // Return a no-op unsubscribe function

@@ -4,6 +4,8 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db, findRandomUser, createChatRoom, sendMessage, subscribeToMessages } from '@/lib/firebase';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // Import our new components
 import MessageList from './chat/MessageList';
@@ -20,6 +22,7 @@ const ChatInterface: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [chatRoomId, setChatRoomId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
+  const [indexingError, setIndexingError] = useState<boolean>(false);
   const { toast } = useToast();
 
   // Find a random user to chat with
@@ -32,6 +35,7 @@ const ChatInterface: React.FC = () => {
       setMatchedUser(null);
       setChatRoomId(null);
       setMessages([]);
+      setIndexingError(false);
       
       console.log("Starting to find a match...");
       console.log("Current user ID:", user.uid);
@@ -78,6 +82,9 @@ const ChatInterface: React.FC = () => {
         errorMessage = 'Firebase permission denied. Please check that you\'ve updated the Firestore rules correctly and try again.';
       } else if (errorMessage.includes('not-found')) {
         errorMessage = 'User document not found. Please make sure your user account is correctly set up.';
+      } else if (errorMessage.includes('failed-precondition') && errorMessage.includes('index')) {
+        errorMessage = 'Firestore requires an index for this query. Please check the console for a link to create it.';
+        setIndexingError(true);
       }
       
       console.log("Detailed error:", JSON.stringify(error));
@@ -100,13 +107,18 @@ const ChatInterface: React.FC = () => {
     const unsubscribe = subscribeToMessages(chatRoomId, (newMessages) => {
       setMessages(newMessages);
       console.log("New messages:", newMessages.length);
+      
+      // If we received messages successfully, clear any indexing error
+      if (indexingError && newMessages.length > 0) {
+        setIndexingError(false);
+      }
     });
     
     return () => {
       console.log("Unsubscribing from messages");
       unsubscribe();
     };
-  }, [chatRoomId]);
+  }, [chatRoomId, indexingError]);
 
   // Find a match on first load
   useEffect(() => {
@@ -155,6 +167,17 @@ const ChatInterface: React.FC = () => {
           onNewChat={findRandomMatch} 
           disabled={finding} 
         />
+
+        {indexingError && (
+          <Alert variant="warning" className="animate-bounce-slow">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Firestore Index Required</AlertTitle>
+            <AlertDescription>
+              <p>Firebase needs to create an index for chat messages. Please check your browser console for a link to create it. This is a one-time setup.</p>
+              <p className="mt-2 text-sm">After creating the index, it may take a few minutes to become active.</p>
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Card className="glass-card overflow-hidden">
           <MessageList messages={messages} />

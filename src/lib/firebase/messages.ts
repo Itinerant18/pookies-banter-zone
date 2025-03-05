@@ -1,5 +1,5 @@
 
-import { collection, doc, addDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp, getDocs } from 'firebase/firestore';
+import { collection, doc, addDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp, getDocs, setDoc } from 'firebase/firestore';
 import { db } from './config';
 
 export const sendMessage = async (chatRoomId: string, senderId: string, message: string) => {
@@ -9,7 +9,8 @@ export const sendMessage = async (chatRoomId: string, senderId: string, message:
       chatRoomId,
       senderId,
       message,
-      timestamp: serverTimestamp()
+      timestamp: serverTimestamp(),
+      status: 'sent'
     };
     
     // Add the message document
@@ -19,13 +20,49 @@ export const sendMessage = async (chatRoomId: string, senderId: string, message:
     // Update chat room with last message
     await updateDoc(doc(db, "chatRooms", chatRoomId), {
       lastMessage: message,
-      lastMessageTime: serverTimestamp()
+      lastMessageTime: serverTimestamp(),
+      lastMessageSenderId: senderId
     });
     
     return messageRef.id;
   } catch (error) {
     console.error("Error sending message: ", error);
     throw error;
+  }
+};
+
+export const updateTypingStatus = async (chatRoomId: string, userId: string, isTyping: boolean) => {
+  try {
+    const typingRef = doc(db, "typing", `${chatRoomId}_${userId}`);
+    await setDoc(typingRef, {
+      chatRoomId,
+      userId,
+      isTyping,
+      timestamp: serverTimestamp()
+    });
+    return true;
+  } catch (error) {
+    console.error("Error updating typing status: ", error);
+    return false;
+  }
+};
+
+export const subscribeToTypingStatus = (chatRoomId: string, userId: string, callback: (isTyping: boolean) => void) => {
+  try {
+    const typingRef = doc(db, "typing", `${chatRoomId}_${userId}`);
+    
+    return onSnapshot(typingRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        callback(data.isTyping === true);
+      } else {
+        callback(false);
+      }
+    });
+  } catch (error) {
+    console.error("Error subscribing to typing status: ", error);
+    callback(false);
+    return () => {};
   }
 };
 

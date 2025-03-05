@@ -1,13 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, db, findRandomUser, createChatRoom, sendMessage, subscribeToMessages } from '@/lib/firebase';
+import { auth, db, findRandomUser, createChatRoom, sendMessage, subscribeToMessages, updateTypingStatus, subscribeToTypingStatus } from '@/lib/firebase';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-// Import our new components
+// Import our components
 import MessageList from './chat/MessageList';
 import MessageInput from './chat/MessageInput';
 import UserCard from './chat/UserCard';
@@ -23,6 +23,7 @@ const ChatInterface: React.FC = () => {
   const [chatRoomId, setChatRoomId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [indexingError, setIndexingError] = useState<boolean>(false);
+  const [isRecipientTyping, setIsRecipientTyping] = useState(false);
   const { toast } = useToast();
 
   // Find a random user to chat with
@@ -36,6 +37,7 @@ const ChatInterface: React.FC = () => {
       setChatRoomId(null);
       setMessages([]);
       setIndexingError(false);
+      setIsRecipientTyping(false);
       
       console.log("Starting to find a match...");
       console.log("Current user ID:", user.uid);
@@ -60,7 +62,6 @@ const ChatInterface: React.FC = () => {
         toast({
           title: 'Match found!',
           description: `You're now chatting with ${randomUser.name || 'Anonymous'}`,
-          variant: 'default',
         });
         
         // Create a chat room
@@ -128,6 +129,22 @@ const ChatInterface: React.FC = () => {
     };
   }, [chatRoomId, indexingError]);
 
+  // Subscribe to typing status
+  useEffect(() => {
+    if (!chatRoomId || !matchedUser) return;
+    
+    console.log("Subscribing to typing status in room:", chatRoomId);
+    const unsubscribe = subscribeToTypingStatus(chatRoomId, matchedUser.uid, (isTyping) => {
+      console.log("Typing status update:", isTyping);
+      setIsRecipientTyping(isTyping);
+    });
+    
+    return () => {
+      console.log("Unsubscribing from typing status");
+      unsubscribe();
+    };
+  }, [chatRoomId, matchedUser]);
+
   // Handle sending a message
   const handleSendMessage = async (message: string) => {
     if (!user || !chatRoomId) return;
@@ -144,6 +161,18 @@ const ChatInterface: React.FC = () => {
         variant: 'destructive',
       });
       throw error; // Propagate error to MessageInput component
+    }
+  };
+
+  // Handle typing status
+  const handleTypingStatus = async (isTyping: boolean) => {
+    if (!user || !chatRoomId) return;
+    
+    try {
+      await updateTypingStatus(chatRoomId, user.uid, isTyping);
+    } catch (error) {
+      console.error('Error updating typing status:', error);
+      // Don't show a toast for typing errors as it's not critical
     }
   };
 
@@ -170,7 +199,7 @@ const ChatInterface: React.FC = () => {
         />
 
         {indexingError && (
-          <Alert variant="warning" className="animate-bounce-slow">
+          <Alert variant="destructive" className="animate-bounce-slow">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Firestore Index Required</AlertTitle>
             <AlertDescription>
@@ -181,11 +210,17 @@ const ChatInterface: React.FC = () => {
         )}
 
         <Card className="glass-card overflow-hidden">
-          <MessageList messages={messages} />
+          <MessageList 
+            messages={messages} 
+            isTyping={isRecipientTyping}
+            recipientId={matchedUser.uid}
+          />
         </Card>
 
         <MessageInput 
-          onSendMessage={handleSendMessage} 
+          onSendMessage={handleSendMessage}
+          onTyping={handleTypingStatus}
+          chatRoomId={chatRoomId}
           disabled={!chatRoomId} 
         />
       </div>

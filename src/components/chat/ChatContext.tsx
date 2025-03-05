@@ -159,20 +159,36 @@ export const ChatContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
     if (!chatRoomId) return;
     
     console.log("Subscribing to messages in room:", chatRoomId);
-    const unsubscribe = subscribeToMessages(chatRoomId, (newMessages) => {
-      console.log("Message update received, count:", newMessages.length);
-      // Use direct assignment instead of functional update to ensure we always get fresh data
-      setMessages(newMessages);
+    
+    // Add a delay to ensure Firestore has time to process the chat room creation
+    const timer = setTimeout(() => {
+      const unsubscribe = subscribeToMessages(chatRoomId, (newMessages) => {
+        console.log("Message update received, count:", newMessages.length);
+        
+        // Check if we have any messages with null or undefined timestamp
+        const hasInvalidMessages = newMessages.some(msg => !msg.timestamp);
+        if (hasInvalidMessages) {
+          console.warn("Some messages have invalid timestamps:", 
+            newMessages.filter(msg => !msg.timestamp));
+        }
+        
+        // Use direct assignment instead of functional update to ensure we always get fresh data
+        setMessages(newMessages);
+        
+        // If we received messages successfully, clear any indexing error
+        if (indexingError && newMessages.length > 0) {
+          setIndexingError(false);
+        }
+      });
       
-      // If we received messages successfully, clear any indexing error
-      if (indexingError && newMessages.length > 0) {
-        setIndexingError(false);
-      }
-    });
+      return () => {
+        console.log("Unsubscribing from messages");
+        unsubscribe();
+      };
+    }, 1000); // 1 second delay
     
     return () => {
-      console.log("Unsubscribing from messages");
-      unsubscribe();
+      clearTimeout(timer);
     };
   }, [chatRoomId, indexingError]);
 

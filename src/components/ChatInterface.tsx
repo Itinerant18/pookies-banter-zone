@@ -1,15 +1,17 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db, findRandomUser, createChatRoom, sendMessage, subscribeToMessages } from '@/lib/firebase';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, RefreshCw, Loader2, AlertTriangle, Check } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+
+// Import our new components
+import MessageList from './chat/MessageList';
+import MessageInput from './chat/MessageInput';
+import UserCard from './chat/UserCard';
+import FindingMatch from './chat/FindingMatch';
+import ErrorState from './chat/ErrorState';
+import EmptyState from './chat/EmptyState';
 
 const ChatInterface: React.FC = () => {
   const [user] = useAuthState(auth);
@@ -18,9 +20,6 @@ const ChatInterface: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [chatRoomId, setChatRoomId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [sending, setSending] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   // Find a random user to chat with
@@ -82,11 +81,6 @@ const ChatInterface: React.FC = () => {
     return () => unsubscribe();
   }, [chatRoomId]);
 
-  // Scroll to bottom of messages
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
   // Find a match on first load
   useEffect(() => {
     if (user) {
@@ -95,15 +89,11 @@ const ChatInterface: React.FC = () => {
   }, [user]);
 
   // Handle sending a message
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!user || !chatRoomId || !newMessage.trim()) return;
+  const handleSendMessage = async (message: string) => {
+    if (!user || !chatRoomId) return;
     
     try {
-      setSending(true);
-      await sendMessage(chatRoomId, user.uid, newMessage.trim());
-      setNewMessage('');
+      await sendMessage(chatRoomId, user.uid, message);
     } catch (error: any) {
       console.error('Error sending message:', error);
       toast({
@@ -111,116 +101,47 @@ const ChatInterface: React.FC = () => {
         description: error.message || 'Please try again',
         variant: 'destructive',
       });
-    } finally {
-      setSending(false);
+      throw error; // Propagate error to MessageInput component
     }
+  };
+
+  // Render the appropriate component based on state
+  const renderContent = () => {
+    if (finding) {
+      return <FindingMatch />;
+    }
+    
+    if (error) {
+      return <ErrorState error={error} onRetry={findRandomMatch} />;
+    }
+    
+    if (!matchedUser) {
+      return <EmptyState onFindMatch={findRandomMatch} />;
+    }
+    
+    return (
+      <div className="flex flex-col space-y-4">
+        <UserCard 
+          user={matchedUser} 
+          onNewChat={findRandomMatch} 
+          disabled={finding} 
+        />
+
+        <Card className="glass-card overflow-hidden">
+          <MessageList messages={messages} />
+        </Card>
+
+        <MessageInput 
+          onSendMessage={handleSendMessage} 
+          disabled={!chatRoomId} 
+        />
+      </div>
+    );
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto pt-6 pb-20 animate-fade-in">
-      {finding ? (
-        <div className="flex flex-col items-center justify-center h-64">
-          <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
-          <h3 className="text-xl font-medium">Finding someone to chat with...</h3>
-          <p className="text-muted-foreground mt-2">This might take a moment</p>
-        </div>
-      ) : error ? (
-        <div className="flex flex-col items-center justify-center h-64">
-          <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
-          <h3 className="text-xl font-medium mb-2">We encountered a problem</h3>
-          <p className="text-muted-foreground text-center mb-6">{error}</p>
-          <Button onClick={findRandomMatch} size="lg" className="animate-enter">
-            Try Again
-          </Button>
-        </div>
-      ) : !matchedUser ? (
-        <div className="flex flex-col items-center justify-center h-64">
-          <h3 className="text-xl font-medium mb-4">No one to chat with right now</h3>
-          <Button onClick={findRandomMatch} size="lg" className="animate-enter">
-            Find Someone to Chat With
-          </Button>
-        </div>
-      ) : (
-        <div className="flex flex-col space-y-4">
-          <Card className="glass-card overflow-hidden">
-            <CardContent className="p-4 flex items-center space-x-4">
-              <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
-                <AvatarImage src={matchedUser.photoURL || undefined} alt={matchedUser.name} />
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  {matchedUser.name ? matchedUser.name.charAt(0).toUpperCase() : 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <h3 className="text-lg font-medium">{matchedUser.name || 'Anonymous'}</h3>
-                <div className="flex items-center text-xs text-green-500">
-                  <Check className="w-3 h-3 mr-1" />
-                  <span>Online now</span>
-                </div>
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={findRandomMatch} 
-                disabled={finding}
-                className="shrink-0"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                New Chat
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card overflow-hidden">
-            <ScrollArea className="h-[400px] p-4">
-              {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center p-4">
-                  <h3 className="text-lg font-medium">No messages yet</h3>
-                  <p className="text-muted-foreground mt-2">Say hello to start the conversation!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`flex ${
-                        msg.senderId === user?.uid ? 'justify-end' : 'justify-start'
-                      }`}
-                    >
-                      <div
-                        className={`max-w-[75%] px-4 py-2 rounded-lg ${
-                          msg.senderId === user?.uid
-                            ? 'bg-primary text-primary-foreground rounded-br-none'
-                            : 'bg-secondary text-secondary-foreground rounded-bl-none'
-                        }`}
-                      >
-                        {msg.message}
-                      </div>
-                    </div>
-                  ))}
-                  <div ref={messagesEndRef} />
-                </div>
-              )}
-            </ScrollArea>
-          </Card>
-
-          <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
-            <Input
-              placeholder="Type a message..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              className="flex-1"
-              disabled={sending}
-            />
-            <Button type="submit" disabled={!newMessage.trim() || sending}>
-              {sending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
-          </form>
-        </div>
-      )}
+      {renderContent()}
     </div>
   );
 };

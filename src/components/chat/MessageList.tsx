@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -61,8 +60,10 @@ const MessageList: React.FC<MessageListProps> = ({
         formattedTime: msg.timestamp?.toDate ? 
           format(msg.timestamp.toDate(), 'HH:mm') : 
           'Sending...',
-        // Add read status - just a placeholder, would be implemented with the backend
-        status: msg.senderId === user?.uid ? 'sent' : undefined
+        // Add read status - ensure it's one of the allowed values
+        status: msg.senderId === user?.uid ? 
+          (msg.status as 'sending' | 'sent' | 'delivered' | 'read' || 'sent') : 
+          undefined
       }));
       setFormattedMessages(processed);
       

@@ -1,4 +1,3 @@
-
 import { collection, doc, addDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp, getDocs, setDoc } from 'firebase/firestore';
 import { db } from './config';
 
@@ -10,7 +9,7 @@ export const sendMessage = async (chatRoomId: string, senderId: string, message:
       senderId,
       message,
       timestamp: serverTimestamp(),
-      status: 'sent'
+      status: 'sent' // Now using literal string 'sent' instead of a generic string
     };
     
     // Add the message document

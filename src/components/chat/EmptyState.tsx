@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Shuffle, Users } from 'lucide-react';
-import { useChatContext } from './ChatContext';
+import { useChatContext } from '@/contexts/ChatContext';
 
 interface EmptyStateProps {
   onFindMatch: () => void;

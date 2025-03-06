@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { useChatContext } from './ChatContext';
+import { useChatContext } from '@/contexts/ChatContext';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import UserCard from './UserCard';

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import ChatContextProvider from './chat/ChatContext';
+import ChatContextProvider from './chat/ChatContextProvider';
 import ChatContainer from './chat/ChatContainer';
 
 const ChatInterface: React.FC = () => {

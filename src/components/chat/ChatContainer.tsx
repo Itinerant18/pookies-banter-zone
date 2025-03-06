@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useChatContext } from './ChatContext';
+import { useChatContext } from '@/contexts/ChatContext';
 import FindingMatch from './FindingMatch';
 import ErrorState from './ErrorState';
 import EmptyState from './EmptyState';

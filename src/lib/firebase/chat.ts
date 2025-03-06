@@ -19,10 +19,17 @@ export const findRandomUser = async (currentUserId: string) => {
           email: currentUser.email,
           photoURL: currentUser.photoURL,
           createdAt: serverTimestamp(),
-          status: "online"
+          status: "online",
+          lastActive: serverTimestamp()
         });
         console.log("Created user document for current user");
       }
+    } else {
+      // Update user status
+      await updateDoc(doc(db, "users", currentUserId), {
+        status: "online",
+        lastActive: serverTimestamp()
+      });
     }
     
     // Get all users except the current user
@@ -58,7 +65,20 @@ export const createChatRoom = async (user1Id: string, user2Id: string) => {
     // Sort IDs to ensure consistent chat room IDs
     const members = [user1Id, user2Id].sort();
     
-    // Create or get chat room
+    // Check if chat room already exists
+    const chatRoomsQuery = query(
+      collection(db, "chatRooms"),
+      where("members", "==", members)
+    );
+    
+    const existingRooms = await getDocs(chatRoomsQuery);
+    
+    if (!existingRooms.empty) {
+      // Return the ID of the first existing room
+      return existingRooms.docs[0].id;
+    }
+    
+    // Create new chat room if none exists
     const chatRoomDoc = await addDoc(collection(db, "chatRooms"), {
       members,
       createdAt: serverTimestamp(),

@@ -14,7 +14,7 @@ const ChatContent: React.FC = () => {
     messages, 
     indexingError, 
     isRecipientTyping,
-    findRandomMatch,
+    showUserList,
     handleSendMessage,
     handleTypingStatus
   } = useChatContext();
@@ -27,7 +27,8 @@ const ChatContent: React.FC = () => {
     <div className="flex flex-col space-y-4">
       <UserCard 
         user={matchedUser} 
-        onNewChat={findRandomMatch} 
+        onNewChat={showUserList} 
+        buttonLabel="Change User"
         disabled={false} 
       />
 

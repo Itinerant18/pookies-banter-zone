@@ -1,4 +1,5 @@
-import { collection, doc, addDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp, getDocs, setDoc, Timestamp } from 'firebase/firestore';
+
+import { collection, doc, addDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp, getDocs, setDoc, Timestamp, writeBatch } from 'firebase/firestore';
 import { db } from './config';
 
 // Define a Message type to ensure consistent handling
@@ -45,6 +46,51 @@ export const sendMessage = async (chatRoomId: string, senderId: string, message:
   } catch (error) {
     console.error("Error sending message: ", error);
     throw error;
+  }
+};
+
+export const updateMessageStatus = async (messageId: string, status: 'sending' | 'sent' | 'delivered' | 'read') => {
+  try {
+    const messageRef = doc(db, "messages", messageId);
+    await updateDoc(messageRef, { status });
+    console.log(`Message ${messageId} marked as ${status}`);
+    return true;
+  } catch (error) {
+    console.error(`Error updating message ${messageId} status:`, error);
+    return false;
+  }
+};
+
+export const markMessagesAsRead = async (chatRoomId: string, recipientId: string) => {
+  try {
+    // Get all unread messages sent to this recipient
+    const unreadQuery = query(
+      collection(db, "messages"),
+      where("chatRoomId", "==", chatRoomId),
+      where("senderId", "!=", recipientId),
+      where("status", "in", ["sent", "delivered"])
+    );
+    
+    const unreadSnapshot = await getDocs(unreadQuery);
+    
+    if (unreadSnapshot.empty) {
+      return 0;
+    }
+    
+    // Use batch update for better performance
+    const batch = writeBatch(db);
+    
+    unreadSnapshot.docs.forEach(doc => {
+      batch.update(doc.ref, { status: "read" });
+    });
+    
+    await batch.commit();
+    console.log(`Marked ${unreadSnapshot.size} messages as read in room ${chatRoomId}`);
+    
+    return unreadSnapshot.size;
+  } catch (error) {
+    console.error("Error marking messages as read:", error);
+    return 0;
   }
 };
 

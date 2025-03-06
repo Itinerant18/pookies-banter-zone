@@ -4,7 +4,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { format } from 'date-fns';
-import { Message } from '@/lib/firebase/messages';
+import { Message, markMessagesAsRead } from '@/lib/firebase/messages';
 import MessageStatus from './MessageStatus';
 
 interface FormattedMessage extends Message {
@@ -15,17 +15,20 @@ interface MessageListProps {
   messages: Message[];
   isTyping?: boolean;
   recipientId?: string;
+  chatRoomId?: string;
 }
 
 const MessageList: React.FC<MessageListProps> = ({ 
   messages, 
   isTyping = false,
-  recipientId
+  recipientId,
+  chatRoomId
 }) => {
   const [user] = useAuthState(auth);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [formattedMessages, setFormattedMessages] = useState<FormattedMessage[]>([]);
   const [lastReadMessageId, setLastReadMessageId] = useState<string | null>(null);
+  const isVisible = useRef(true);
 
   // Group messages by date
   const groupMessagesByDate = (msgs: FormattedMessage[]) => {
@@ -49,6 +52,41 @@ const MessageList: React.FC<MessageListProps> = ({
     
     return groups;
   };
+
+  // Mark messages as read when they're visible and the user is active
+  useEffect(() => {
+    if (!user?.uid || !chatRoomId || !recipientId || !isVisible.current) return;
+    
+    // Check if there are any unread messages from the other user
+    const hasUnreadMessages = messages.some(
+      msg => msg.senderId !== user.uid && msg.status !== 'read'
+    );
+    
+    if (hasUnreadMessages) {
+      markMessagesAsRead(chatRoomId, user.uid).then(count => {
+        if (count > 0) {
+          console.log(`Marked ${count} messages as read`);
+        }
+      });
+    }
+  }, [messages, user?.uid, chatRoomId, recipientId]);
+
+  // Track page visibility
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      isVisible.current = document.visibilityState === 'visible';
+      
+      // If becoming visible and there are messages, mark them as read
+      if (isVisible.current && user?.uid && chatRoomId && recipientId) {
+        markMessagesAsRead(chatRoomId, user.uid);
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [chatRoomId, recipientId, user?.uid]);
 
   useEffect(() => {
     if (messages && messages.length > 0) {

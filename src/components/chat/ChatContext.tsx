@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, findRandomUser, createChatRoom, subscribeToMessages, updateTypingStatus, subscribeToTypingStatus } from '@/lib/firebase';
@@ -15,9 +16,13 @@ interface ChatContextType {
   messages: Message[];
   indexingError: boolean;
   isRecipientTyping: boolean;
+  userListMode: boolean;
   findRandomMatch: () => Promise<void>;
   handleSendMessage: (message: string) => Promise<void>;
   handleTypingStatus: (isTyping: boolean) => Promise<void>;
+  selectUser: (user: any) => Promise<void>;
+  showUserList: () => void;
+  goBack: () => void;
 }
 
 // Create context with default values
@@ -30,9 +35,13 @@ const ChatContext = createContext<ChatContextType>({
   messages: [],
   indexingError: false,
   isRecipientTyping: false,
+  userListMode: false,
   findRandomMatch: async () => {},
   handleSendMessage: async () => {},
   handleTypingStatus: async () => {},
+  selectUser: async () => {},
+  showUserList: () => {},
+  goBack: () => {},
 });
 
 // Custom hook to use the chat context
@@ -47,8 +56,71 @@ export const ChatContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [messages, setMessages] = useState<Message[]>([]);
   const [indexingError, setIndexingError] = useState<boolean>(false);
   const [isRecipientTyping, setIsRecipientTyping] = useState(false);
+  const [userListMode, setUserListMode] = useState(false);
   const { toast } = useToast();
   
+  // Show user list for direct messaging
+  const showUserList = () => {
+    setUserListMode(true);
+    setMatchedUser(null);
+    setChatRoomId(null);
+    setMessages([]);
+    setError(null);
+    setFinding(false);
+    setIndexingError(false);
+    setIsRecipientTyping(false);
+  };
+  
+  // Go back to empty state
+  const goBack = () => {
+    setUserListMode(false);
+    setMatchedUser(null);
+    setChatRoomId(null);
+    setMessages([]);
+    setError(null);
+    setFinding(false);
+    setIndexingError(false);
+    setIsRecipientTyping(false);
+  };
+  
+  // Select a specific user to chat with
+  const selectUser = async (selectedUser: any) => {
+    if (!user) return;
+    
+    try {
+      setFinding(true);
+      setUserListMode(false);
+      setError(null);
+      
+      console.log("Starting chat with user:", selectedUser);
+      
+      toast({
+        title: 'Starting chat',
+        description: `You're now chatting with ${selectedUser.name || 'Anonymous'}`,
+      });
+      
+      // Create a chat room
+      const roomId = await createChatRoom(user.uid, selectedUser.uid);
+      console.log("Chat room created with ID:", roomId);
+      
+      setMatchedUser(selectedUser);
+      setChatRoomId(roomId);
+    } catch (error: any) {
+      console.error('Error selecting user:', error);
+      let errorMessage = error.message || 'Unknown error occurred';
+      
+      console.log("Detailed error:", JSON.stringify(error));
+      setError(errorMessage);
+      toast({
+        title: 'Error starting chat',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setFinding(false);
+    }
+  };
+
   // Find a random user to chat with
   const findRandomMatch = async () => {
     if (!user) return;
@@ -61,6 +133,7 @@ export const ChatContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setMessages([]);
       setIndexingError(false);
       setIsRecipientTyping(false);
+      setUserListMode(false);
       
       console.log("Starting to find a match...");
       console.log("Current user ID:", user.uid);
@@ -218,9 +291,13 @@ export const ChatContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
     messages,
     indexingError,
     isRecipientTyping,
+    userListMode,
     findRandomMatch,
     handleSendMessage,
     handleTypingStatus,
+    selectUser,
+    showUserList,
+    goBack,
   };
 
   return (

@@ -66,7 +66,7 @@ const Header: React.FC = () => {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link to="/chat" className="flex items-center space-x-2">
           <img src="/hashtags.gif" alt="Logo" className="w-9 h-9"/>
-<span className="text-4xl font-display font-bold bg-gradient-to-b from-cherry-200 to-cherry-600 text-transparent bg-clip-text animate-slide-down">Pookies Banter Zone</span>
+<span className="text-4xl font-display font-bold bg-gradient-to-b from-cherry-200 to-cherry-600 text-transparent bg-clip-text animate-slide-down">Pookie's Banter Zone</span>
         </Link>
 
         <div className="flex items-center space-x-4">

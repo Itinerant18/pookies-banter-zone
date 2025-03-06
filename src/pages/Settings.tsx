@@ -7,8 +7,9 @@ import { useToast } from '@/components/ui/use-toast';
 import { Bell, Moon, ChevronLeft } from 'lucide-react';
 import { getUserProfile, updateUserSettings } from '@/lib/firebase/profile';
 import { Button } from '@/components/ui/button';
+import { useDarkMode } from '@/hooks/useDarkMode';
 
-// Import our new components
+// Import our components
 import SettingsCard from '@/components/settings/SettingsCard';
 import SettingsToggle from '@/components/settings/SettingsToggle';
 import LogoutDialog from '@/components/settings/LogoutDialog';
@@ -25,7 +26,7 @@ const Settings = () => {
   
   // Settings state
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
-  const [darkModeEnabled, setDarkModeEnabled] = useState<boolean>(false);
+  const { darkMode, toggleDarkMode, setDarkMode } = useDarkMode(user, false);
 
   // Handle back button click
   const handleBackClick = () => {
@@ -49,12 +50,10 @@ const Settings = () => {
               : true
           );
           
-          // Set dark mode preference from DB or default to false
-          setDarkModeEnabled(
-            userProfile.darkModeEnabled !== undefined 
-              ? userProfile.darkModeEnabled 
-              : false
-          );
+          // Set dark mode if it's defined in profile
+          if (userProfile.darkModeEnabled !== undefined) {
+            setDarkMode(userProfile.darkModeEnabled);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch user settings:", error);
@@ -69,17 +68,7 @@ const Settings = () => {
     };
     
     fetchUserSettings();
-  }, [user, toast]);
-
-  // Apply dark mode when the component mounts or when darkModeEnabled changes
-  useEffect(() => {
-    if (darkModeEnabled) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('darkModeEnabled', JSON.stringify(darkModeEnabled));
-  }, [darkModeEnabled]);
+  }, [user, toast, setDarkMode]);
 
   // Handle notifications toggle
   const handleNotificationsToggle = async () => {
@@ -115,19 +104,12 @@ const Settings = () => {
     }
   };
 
-  // Handle dark mode toggle
+  // Handle dark mode toggle using our custom hook
   const handleDarkModeToggle = async () => {
     if (!user) return;
     
-    const newValue = !darkModeEnabled;
-    
     try {
-      // Optimistically update UI
-      setDarkModeEnabled(newValue);
-      // localStorage update handled in useEffect
-      
-      // Update in database
-      await updateUserSettings(user, { darkModeEnabled: newValue });
+      const newValue = await toggleDarkMode();
       
       toast({
         title: newValue ? 'Dark mode enabled' : 'Light mode enabled',
@@ -135,8 +117,6 @@ const Settings = () => {
       });
     } catch (error) {
       console.error('Failed to update theme:', error);
-      // Revert UI on error
-      setDarkModeEnabled(!newValue);
       
       toast({
         title: 'Failed to update theme',
@@ -221,7 +201,7 @@ const Settings = () => {
           icon={Moon}
           title="Dark Mode"
           description="Toggle dark mode on/off"
-          enabled={darkModeEnabled}
+          enabled={darkMode}
           onToggle={handleDarkModeToggle}
         />
         

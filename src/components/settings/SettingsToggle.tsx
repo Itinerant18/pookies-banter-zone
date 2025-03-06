@@ -31,6 +31,7 @@ const SettingsToggle = ({
         aria-label={`Toggle ${title}`} 
         pressed={enabled}
         onPressedChange={onToggle}
+        className={enabled ? "bg-primary/20 text-primary-foreground" : ""}
       />
     </div>
   );

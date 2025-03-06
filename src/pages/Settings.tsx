@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Toggle } from '@/components/ui/toggle';
-import { Bell, Moon, Globe, LogOut } from 'lucide-react';
+import { Bell, Moon, LogOut } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import {
   AlertDialog,
@@ -26,7 +26,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { updateUserSettings } from '@/lib/firebase/profile';
+import { getUserProfile, updateUserSettings } from '@/lib/firebase/profile';
 
 const Settings = () => {
   const [user, loading] = useAuthState(auth);
@@ -34,17 +34,50 @@ const Settings = () => {
   const { toast } = useToast();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Settings state
-  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(() => {
-    const saved = localStorage.getItem('notificationsEnabled');
-    return saved !== null ? JSON.parse(saved) : true; // Default: enabled
-  });
-  
-  const [darkModeEnabled, setDarkModeEnabled] = useState<boolean>(() => {
-    const saved = localStorage.getItem('darkModeEnabled');
-    return saved !== null ? JSON.parse(saved) : false; // Default: disabled
-  });
+  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
+  const [darkModeEnabled, setDarkModeEnabled] = useState<boolean>(false);
+
+  // Fetch user settings when component mounts
+  useEffect(() => {
+    const fetchUserSettings = async () => {
+      if (!user) return;
+      
+      try {
+        setIsLoading(true);
+        const userProfile = await getUserProfile(user.uid);
+        
+        if (userProfile) {
+          // Set notification preference from DB or default to true
+          setNotificationsEnabled(
+            userProfile.notificationsEnabled !== undefined 
+              ? userProfile.notificationsEnabled 
+              : true
+          );
+          
+          // Set dark mode preference from DB or default to false
+          setDarkModeEnabled(
+            userProfile.darkModeEnabled !== undefined 
+              ? userProfile.darkModeEnabled 
+              : false
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch user settings:", error);
+        toast({
+          title: "Failed to load settings",
+          description: "Please try again later",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUserSettings();
+  }, [user, toast]);
 
   // Apply dark mode when the component mounts or when darkModeEnabled changes
   useEffect(() => {
@@ -58,38 +91,51 @@ const Settings = () => {
 
   // Handle notifications toggle
   const handleNotificationsToggle = async () => {
+    if (!user) return;
+    
+    const newValue = !notificationsEnabled;
+    
     try {
-      const newValue = !notificationsEnabled;
+      // Optimistically update UI
       setNotificationsEnabled(newValue);
       localStorage.setItem('notificationsEnabled', JSON.stringify(newValue));
       
-      if (user) {
-        await updateUserSettings(user, { notificationsEnabled: newValue });
-      }
+      // Update in database
+      await updateUserSettings(user, { notificationsEnabled: newValue });
       
       toast({
         title: newValue ? 'Notifications enabled' : 'Notifications disabled',
-        description: newValue ? 'You will now receive notifications' : 'You will no longer receive notifications',
+        description: newValue 
+          ? 'You will now receive notifications' 
+          : 'You will no longer receive notifications',
       });
     } catch (error) {
       console.error('Failed to update notification settings:', error);
+      // Revert UI on error
+      setNotificationsEnabled(!newValue);
+      localStorage.setItem('notificationsEnabled', JSON.stringify(!newValue));
+      
       toast({
         title: 'Failed to update notification settings',
         description: 'Please try again later',
         variant: 'destructive',
       });
-      // Revert the UI state if the backend update fails
-      setNotificationsEnabled(!notificationsEnabled);
-      localStorage.setItem('notificationsEnabled', JSON.stringify(!notificationsEnabled));
     }
   };
 
   // Handle dark mode toggle
-  const handleDarkModeToggle = () => {
+  const handleDarkModeToggle = async () => {
+    if (!user) return;
+    
+    const newValue = !darkModeEnabled;
+    
     try {
-      const newValue = !darkModeEnabled;
+      // Optimistically update UI
       setDarkModeEnabled(newValue);
-      // localStorage update is handled in the useEffect
+      // localStorage update handled in useEffect
+      
+      // Update in database
+      await updateUserSettings(user, { darkModeEnabled: newValue });
       
       toast({
         title: newValue ? 'Dark mode enabled' : 'Light mode enabled',
@@ -97,13 +143,14 @@ const Settings = () => {
       });
     } catch (error) {
       console.error('Failed to update theme:', error);
+      // Revert UI on error
+      setDarkModeEnabled(!newValue);
+      
       toast({
         title: 'Failed to update theme',
         description: 'Please try again later',
         variant: 'destructive',
       });
-      // Revert the UI state if there's an error
-      setDarkModeEnabled(!darkModeEnabled);
     }
   };
 
@@ -134,7 +181,7 @@ const Settings = () => {
     }
   };
 
-  if (loading) {
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
@@ -160,12 +207,13 @@ const Settings = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
+            {/* Notifications Toggle */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Bell className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Notifications</p>
-                  <p className="text-xs text-muted-foreground">Receive chat notifications</p>
+                  <p className="text-xs text-muted-foreground">Receive app notifications</p>
                 </div>
               </div>
               <Toggle 
@@ -175,6 +223,7 @@ const Settings = () => {
               />
             </div>
             
+            {/* Dark Mode Toggle */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Moon className="h-5 w-5 text-muted-foreground" />
@@ -190,9 +239,12 @@ const Settings = () => {
               />
             </div>
             
+            {/* Language (Fixed to English) */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Globe className="h-5 w-5 text-muted-foreground" />
+                <div className="h-5 w-5 flex items-center justify-center text-muted-foreground">
+                  <span className="text-sm">🇺🇸</span>
+                </div>
                 <div>
                   <p className="text-sm font-medium">Language</p>
                   <p className="text-xs text-muted-foreground">English</p>

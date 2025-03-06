@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, logoutUser } from '@/lib/firebase';
 import { useToast } from '@/components/ui/use-toast';
-import { Bell, Moon } from 'lucide-react';
+import { Bell, Moon, ChevronLeft } from 'lucide-react';
 import { getUserProfile, updateUserSettings } from '@/lib/firebase/profile';
+import { Button } from '@/components/ui/button';
 
 // Import our new components
 import SettingsCard from '@/components/settings/SettingsCard';
@@ -25,6 +26,11 @@ const Settings = () => {
   // Settings state
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState<boolean>(false);
+
+  // Handle back button click
+  const handleBackClick = () => {
+    navigate('/');
+  };
 
   // Fetch user settings when component mounts
   useEffect(() => {
@@ -177,6 +183,17 @@ const Settings = () => {
 
   return (
     <div className="w-full max-w-md mx-auto py-6 animate-fade-in">
+      <div className="mb-4">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleBackClick}
+          className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Back to Home
+        </Button>
+      </div>
       <SettingsCard 
         title="Settings" 
         description="Customize your app experience"

@@ -109,8 +109,8 @@ const OnboardingScreen: React.FC = () => {
     <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12 animate-fade-in">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-display font-bold text-gray-900 animate-slide-down">ConnectChat</h1>
-          <p className="mt-3 text-lg text-gray-600 max-w-sm mx-auto animate-slide-down">Connect randomly with people around the world</p>
+          <h1 className="text-4xl font-display font-bold text-gray-900 animate-slide-down">Pookies Banter Zone</h1>
+          <p className="mt-3 text-lg text-cherry max-w-sm mx-auto animate-slide-down">Connect With Your Pookies Around The Corner</p>
         </div>
 
         <Card className="glass-card animate-slide-up">

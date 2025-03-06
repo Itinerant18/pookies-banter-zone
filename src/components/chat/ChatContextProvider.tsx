@@ -40,7 +40,8 @@ export const ChatContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setMessages,
     setIndexingError,
     setIsRecipientTyping,
-    setUserListMode
+    setUserListMode,
+    chatRoomId // Pass chatRoomId value to useChatActions
   );
 
   const {

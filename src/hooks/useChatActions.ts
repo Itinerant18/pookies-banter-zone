@@ -10,7 +10,8 @@ export function useChatActions(
   setMessages: (messages: any[]) => void,
   setIndexingError: (error: boolean) => void,
   setIsRecipientTyping: (typing: boolean) => void,
-  setUserListMode: (mode: boolean) => void
+  setUserListMode: (mode: boolean) => void,
+  chatRoomId: string | null
 ) {
   const [user] = useAuthState(auth);
   const { toast } = useToast();

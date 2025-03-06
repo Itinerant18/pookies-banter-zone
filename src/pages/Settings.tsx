@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Toggle } from '@/components/ui/toggle';
-import { Bell, Moon, Globe, Volume2, LogOut } from 'lucide-react';
+import { Bell, Moon, Globe, LogOut } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import {
   AlertDialog,
@@ -26,6 +26,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { updateUserSettings } from '@/lib/firebase/profile';
 
 const Settings = () => {
   const [user, loading] = useAuthState(auth);
@@ -33,6 +34,78 @@ const Settings = () => {
   const { toast } = useToast();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  
+  // Settings state
+  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(() => {
+    const saved = localStorage.getItem('notificationsEnabled');
+    return saved !== null ? JSON.parse(saved) : true; // Default: enabled
+  });
+  
+  const [darkModeEnabled, setDarkModeEnabled] = useState<boolean>(() => {
+    const saved = localStorage.getItem('darkModeEnabled');
+    return saved !== null ? JSON.parse(saved) : false; // Default: disabled
+  });
+
+  // Apply dark mode when the component mounts or when darkModeEnabled changes
+  useEffect(() => {
+    if (darkModeEnabled) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('darkModeEnabled', JSON.stringify(darkModeEnabled));
+  }, [darkModeEnabled]);
+
+  // Handle notifications toggle
+  const handleNotificationsToggle = async () => {
+    try {
+      const newValue = !notificationsEnabled;
+      setNotificationsEnabled(newValue);
+      localStorage.setItem('notificationsEnabled', JSON.stringify(newValue));
+      
+      if (user) {
+        await updateUserSettings(user, { notificationsEnabled: newValue });
+      }
+      
+      toast({
+        title: newValue ? 'Notifications enabled' : 'Notifications disabled',
+        description: newValue ? 'You will now receive notifications' : 'You will no longer receive notifications',
+      });
+    } catch (error) {
+      console.error('Failed to update notification settings:', error);
+      toast({
+        title: 'Failed to update notification settings',
+        description: 'Please try again later',
+        variant: 'destructive',
+      });
+      // Revert the UI state if the backend update fails
+      setNotificationsEnabled(!notificationsEnabled);
+      localStorage.setItem('notificationsEnabled', JSON.stringify(!notificationsEnabled));
+    }
+  };
+
+  // Handle dark mode toggle
+  const handleDarkModeToggle = () => {
+    try {
+      const newValue = !darkModeEnabled;
+      setDarkModeEnabled(newValue);
+      // localStorage update is handled in the useEffect
+      
+      toast({
+        title: newValue ? 'Dark mode enabled' : 'Light mode enabled',
+        description: 'The theme has been updated',
+      });
+    } catch (error) {
+      console.error('Failed to update theme:', error);
+      toast({
+        title: 'Failed to update theme',
+        description: 'Please try again later',
+        variant: 'destructive',
+      });
+      // Revert the UI state if there's an error
+      setDarkModeEnabled(!darkModeEnabled);
+    }
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -95,7 +168,11 @@ const Settings = () => {
                   <p className="text-xs text-muted-foreground">Receive chat notifications</p>
                 </div>
               </div>
-              <Toggle aria-label="Toggle notifications" />
+              <Toggle 
+                aria-label="Toggle notifications" 
+                pressed={notificationsEnabled}
+                onPressedChange={handleNotificationsToggle}
+              />
             </div>
             
             <div className="flex items-center justify-between">
@@ -106,7 +183,11 @@ const Settings = () => {
                   <p className="text-xs text-muted-foreground">Toggle dark mode on/off</p>
                 </div>
               </div>
-              <Toggle aria-label="Toggle dark mode" />
+              <Toggle 
+                aria-label="Toggle dark mode" 
+                pressed={darkModeEnabled}
+                onPressedChange={handleDarkModeToggle}
+              />
             </div>
             
             <div className="flex items-center justify-between">
@@ -114,23 +195,9 @@ const Settings = () => {
                 <Globe className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Language</p>
-                  <p className="text-xs text-muted-foreground">Currently set to English</p>
+                  <p className="text-xs text-muted-foreground">English</p>
                 </div>
               </div>
-              <Button variant="outline" size="sm">
-                Change
-              </Button>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Volume2 className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Sound Effects</p>
-                  <p className="text-xs text-muted-foreground">Play sounds for notifications</p>
-                </div>
-              </div>
-              <Toggle aria-label="Toggle sound effects" />
             </div>
           </div>
         </CardContent>

@@ -1,4 +1,3 @@
-
 import { User, updateProfile } from 'firebase/auth';
 import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -11,6 +10,8 @@ export interface UserProfile {
   gender?: string;
   bio?: string;
   interests?: string[];
+  notificationsEnabled?: boolean;
+  darkModeEnabled?: boolean;
 }
 
 export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
@@ -119,6 +120,38 @@ export const deleteUserPhoto = async (user: User) => {
     return true;
   } catch (error) {
     console.error("Error deleting photo: ", error);
+    throw error;
+  }
+};
+
+export const updateUserSettings = async (user: User, settings: {
+  notificationsEnabled?: boolean;
+  darkModeEnabled?: boolean;
+}) => {
+  try {
+    console.log("Updating user settings:", settings);
+    
+    // Check if the user document exists
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    
+    if (userDoc.exists()) {
+      // Update existing document
+      await updateDoc(doc(db, "users", user.uid), {
+        ...settings
+      });
+    } else {
+      // Create new document if it doesn't exist
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        ...settings,
+        createdAt: new Date()
+      });
+    }
+    
+    console.log("User settings updated successfully");
+    return true;
+  } catch (error) {
+    console.error("Error updating user settings: ", error);
     throw error;
   }
 };

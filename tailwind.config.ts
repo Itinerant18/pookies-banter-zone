@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss"
 
 const config: Config = {
@@ -8,7 +7,7 @@ const config: Config = {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
-	],
+  ],
   prefix: "",
   theme: {
     container: {
@@ -53,7 +52,6 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Our custom palette
         cherry: {
           DEFAULT: "#edafb8",
           100: "#430f17",

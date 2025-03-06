@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, logoutUser } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageSquare, User, Settings, LogOut } from 'lucide-react';
+import { MessageCircle, User, Settings, LogOut } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,7 +32,6 @@ const Header: React.FC = () => {
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Skip rendering header on the onboarding page
   if (location.pathname === '/') {
     const noUser = !user;
     if (noUser) return null;
@@ -62,10 +60,13 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-gray-100">
+    <header className="sticky top-0 z-40 w-full bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link to="/chat" className="flex items-center space-x-2">
-          <span className="text-xl font-display font-bold text-primary">ConnectChat</span>
+          <MessageCircle className="w-6 h-6 text-cherry" />
+          <span className="text-xl font-display font-bold bg-gradient-to-r from-cherry to-champagne bg-clip-text text-transparent">
+            Pookie's Banter Zone
+          </span>
         </Link>
 
         <div className="flex items-center space-x-4">

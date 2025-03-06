@@ -18,7 +18,7 @@
     --popover-foreground: 188 9% 32%;  /* Outer Space */
 
     --primary: 351 63% 81%;  /* Cherry Blossom Pink */
-    --primary-foreground: 0 0% 100%;  /* White */
+    --primary-foreground: 188 9% 32%;  /* Outer Space */
 
     --secondary: 123 14% 73%;  /* Ash Gray */
     --secondary-foreground: 188 9% 32%;  /* Outer Space */
@@ -29,8 +29,8 @@
     --accent: 123 14% 73%;  /* Ash Gray */
     --accent-foreground: 188 9% 32%;  /* Outer Space */
 
-    --destructive: 0 84.2% 60.2%;  /* Keep original destructive */
-    --destructive-foreground: 210 40% 98%;  /* Keep original destructive foreground */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
 
     --border: 45 15% 85%;  /* Timberwolf */
     --input: 45 15% 85%;  /* Timberwolf */
@@ -40,30 +40,30 @@
   }
 
   .dark {
-    /* Dark Theme */
+    /* Dark Theme - Updated for better contrast */
     --background: 188 9% 32%;  /* Outer Space */
     --foreground: 45 15% 85%;  /* Timberwolf */
 
-    --card: 188 9% 25%;  /* Darker Outer Space */
+    --card: 188 9% 27%;  /* Darker Outer Space */
     --card-foreground: 45 15% 85%;  /* Timberwolf */
 
-    --popover: 188 9% 25%;  /* Darker Outer Space */
+    --popover: 188 9% 27%;  /* Darker Outer Space */
     --popover-foreground: 45 15% 85%;  /* Timberwolf */
 
     --primary: 351 63% 81%;  /* Cherry Blossom Pink */
-    --primary-foreground: 0 0% 100%;  /* White */
+    --primary-foreground: 188 9% 32%;  /* Outer Space - For contrast */
 
     --secondary: 123 14% 73%;  /* Ash Gray */
-    --secondary-foreground: 45 15% 85%;  /* Timberwolf */
+    --secondary-foreground: 188 9% 32%;  /* Outer Space - For contrast */
 
-    --muted: 188 9% 25%;  /* Darker Outer Space */
-    --muted-foreground: 45 15% 70%;  /* Lighter Timberwolf */
+    --muted: 188 9% 27%;  /* Darker Outer Space */
+    --muted-foreground: 123 14% 73%;  /* Ash Gray */
 
     --accent: 123 14% 73%;  /* Ash Gray */
     --accent-foreground: 45 15% 85%;  /* Timberwolf */
 
-    --destructive: 0 62.8% 30.6%;  /* Keep original destructive */
-    --destructive-foreground: 210 40% 98%;  /* Keep original destructive foreground */
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 45 15% 85%;  /* Timberwolf */
 
     --border: 188 9% 40%;  /* Slightly lighter Outer Space */
     --input: 188 9% 40%;  /* Slightly lighter Outer Space */

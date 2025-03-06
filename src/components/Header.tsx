@@ -65,7 +65,7 @@ const Header: React.FC = () => {
     <header className="sticky top-0 z-40 w-full bg-champagne/80 dark:bg-outerspace/90 backdrop-blur-md border-b border-gray-100 dark:border-outerspace-300">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link to="/chat" className="flex items-center space-x-2">
-          <img src="/hashtags.gif" alt="Logo" className="w-10 h-10"/>
+          <img src="/hashtags.gif" alt="Logo" className="w-9 h-9"/>
           <span className="text-xl font-display font-bold text-cherry dark:text-timberwolf">Pookies Banter Zone</span>
         </Link>
 

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -12,7 +13,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ onFindMatch }) => {
   const { showUserList } = useChatContext();
   
   return (
-    <Card className="glass-card overflow-hidden">
+    <Card className="glass-card overflow-hidden animate-fade-in">
       <CardContent className="p-6 pt-6 flex flex-col items-center space-y-4">
         <div className="bg-primary/10 p-4 rounded-full">
           <Users className="h-12 w-12 text-primary" />

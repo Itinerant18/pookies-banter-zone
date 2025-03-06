@@ -17,13 +17,20 @@ const ChatContainer: React.FC = () => {
     userListMode
   } = useChatContext();
 
+  // Determine if this is a "no users" error
+  const isNoUsersError = error?.includes('No users available');
+  
   // Render the appropriate component based on state
   if (finding) {
     return <FindingMatch />;
   }
   
   if (error) {
-    return <ErrorState error={error} onRetry={findRandomMatch} />;
+    return <ErrorState 
+      error={error} 
+      onRetry={findRandomMatch} 
+      variant={isNoUsersError ? 'no-users' : 'error'} 
+    />;
   }
   
   if (userListMode) {

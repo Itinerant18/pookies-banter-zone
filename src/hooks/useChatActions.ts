@@ -1,3 +1,4 @@
+
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, findRandomUser, createChatRoom, sendMessage } from '@/lib/firebase';
 import { useToast } from '@/components/ui/use-toast';
@@ -79,11 +80,11 @@ export function useChatActions(
         if (!randomUser) {
           console.log("No users available");
           toast({
-            title: 'No users available',
-            description: 'Please wait for more users to join, or invite friends to create an account!',
-            variant: 'destructive',
+            title: 'No one is online',
+            description: 'Please try again later!',
+            variant: 'default',
           });
-          setError('No users available. Try again later when more users are online.');
+          setError('No users available');
           return;
         }
         

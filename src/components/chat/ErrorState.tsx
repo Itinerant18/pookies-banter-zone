@@ -1,48 +1,53 @@
 
 import React from 'react';
-import { AlertTriangle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { AlertCircle, Clock, RefreshCw } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface ErrorStateProps {
-  error: string;
+  error: string | null;
   onRetry: () => void;
+  variant?: 'error' | 'no-users';
 }
 
-const ErrorState: React.FC<ErrorStateProps> = ({ error, onRetry }) => {
-  const openFirebaseRules = () => {
-    window.open('/src/lib/firebaseRules.md', '_blank');
-  };
-
+const ErrorState: React.FC<ErrorStateProps> = ({ error, onRetry, variant = 'error' }) => {
+  // Display different UI based on whether it's a "no users" message or generic error
+  const isNoUsers = variant === 'no-users' || error?.includes('No users available');
+  
   return (
-    <div className="flex flex-col items-center justify-center h-64">
-      <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
-      <h3 className="text-xl font-medium mb-2">We encountered a problem</h3>
-      <p className="text-muted-foreground text-center mb-6">{error}</p>
-      <Alert variant="destructive" className="mb-4 max-w-md">
-        <AlertTitle>Firebase Permission Error</AlertTitle>
-        <AlertDescription className="mt-2">
-          <p>This error occurs because your Firebase security rules are too restrictive.</p>
-          <ol className="list-decimal pl-4 mt-2 space-y-1 text-sm">
-            <li>Go to your Firebase Console</li>
-            <li>Navigate to Firestore Database → Rules</li>
-            <li>Update the rules to allow read/write access to your collections</li>
-          </ol>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="mt-3 w-full"
-            onClick={openFirebaseRules}
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            View Recommended Rules
-          </Button>
-        </AlertDescription>
-      </Alert>
-      <Button onClick={onRetry} size="lg" className="animate-enter">
-        Try Again
-      </Button>
-    </div>
+    <Card className="glass-card overflow-hidden animate-fade-in">
+      <CardContent className="p-6 pt-6 flex flex-col items-center space-y-4">
+        {isNoUsers ? (
+          <>
+            <div className="bg-orange-100 dark:bg-orange-900/20 text-orange-500 p-4 rounded-full">
+              <Clock className="h-12 w-12" />
+            </div>
+            <h3 className="text-2xl font-semibold tracking-tight">No one is online right now</h3>
+            <p className="text-center text-muted-foreground">
+              Please try again later!
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="bg-destructive/10 p-4 rounded-full">
+              <AlertCircle className="h-12 w-12 text-destructive" />
+            </div>
+            <h3 className="text-2xl font-semibold tracking-tight">Something went wrong</h3>
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription className="mt-2">{error}</AlertDescription>
+            </Alert>
+          </>
+        )}
+      </CardContent>
+      <CardFooter className="p-6 pt-0">
+        <Button onClick={onRetry} className="w-full">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          {isNoUsers ? 'Try Again' : 'Retry'}
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 

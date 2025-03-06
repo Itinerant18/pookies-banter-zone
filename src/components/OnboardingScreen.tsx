@@ -109,7 +109,10 @@ const OnboardingScreen: React.FC = () => {
     <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12 animate-fade-in">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-display font-bold text-cherry animate-slide-down">Pookie's Banter Zone</h1>
+<h1 className="text-4xl font-display font-bold bg-gradient-to-r from-cherry-500 to-cherry-700 text-transparent bg-clip-text animate-slide-down">
+  Pookie's Banter Zone
+</h1>
+         // <h1 className="text-4xl font-display font-bold text-cherry animate-slide-down">Pookie's Banter Zone</h1>
           <p className="mt-3 text-lg text-gray-900 max-w-sm mx-auto animate-slide-down">Connect With Your Pookie Around The Corner</p>
         </div>
 

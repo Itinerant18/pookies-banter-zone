@@ -1,4 +1,3 @@
-
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, findRandomUser, createChatRoom, sendMessage } from '@/lib/firebase';
 import { useToast } from '@/components/ui/use-toast';
@@ -131,12 +130,11 @@ export function useChatActions(
 
   // Handle sending a message
   const handleSendMessage = async (message: string) => {
-    if (!user || !user.uid || !setChatRoomId) return;
-    const chatId = setChatRoomId;
+    if (!user || !user.uid || !chatRoomId) return;
     
     try {
       console.log("Sending message:", message);
-      const messageId = await sendMessage(chatId, user.uid, message);
+      const messageId = await sendMessage(chatRoomId, user.uid, message);
       console.log("Message sent with ID:", messageId);
     } catch (error: any) {
       console.error('Error sending message:', error);

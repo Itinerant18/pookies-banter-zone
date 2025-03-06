@@ -1,11 +1,10 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { format } from 'date-fns';
 import { Message, markMessagesAsRead } from '@/lib/firebase/messages';
-import MessageStatus from './MessageStatus';
+import MessageStatus from '@/components/chat/MessageStatus';
 
 interface FormattedMessage extends Message {
   formattedTime?: string;
@@ -30,7 +29,6 @@ const MessageList: React.FC<MessageListProps> = ({
   const [lastReadMessageId, setLastReadMessageId] = useState<string | null>(null);
   const isVisible = useRef(true);
 
-  // Group messages by date
   const groupMessagesByDate = (msgs: FormattedMessage[]) => {
     const groups: { [date: string]: FormattedMessage[] } = {};
     
@@ -42,7 +40,6 @@ const MessageList: React.FC<MessageListProps> = ({
         }
         groups[date].push(msg);
       } else {
-        // Handle messages without valid timestamps
         if (!groups['pending']) {
           groups['pending'] = [];
         }
@@ -53,11 +50,9 @@ const MessageList: React.FC<MessageListProps> = ({
     return groups;
   };
 
-  // Mark messages as read when they're visible and the user is active
   useEffect(() => {
     if (!user?.uid || !chatRoomId || !recipientId || !isVisible.current) return;
     
-    // Check if there are any unread messages from the other user
     const hasUnreadMessages = messages.some(
       msg => msg.senderId !== user.uid && msg.status !== 'read'
     );
@@ -71,12 +66,10 @@ const MessageList: React.FC<MessageListProps> = ({
     }
   }, [messages, user?.uid, chatRoomId, recipientId]);
 
-  // Track page visibility
   useEffect(() => {
     const handleVisibilityChange = () => {
       isVisible.current = document.visibilityState === 'visible';
       
-      // If becoming visible and there are messages, mark them as read
       if (isVisible.current && user?.uid && chatRoomId && recipientId) {
         markMessagesAsRead(chatRoomId, user.uid);
       }
@@ -102,7 +95,6 @@ const MessageList: React.FC<MessageListProps> = ({
       
       setFormattedMessages(processed);
       
-      // Set last message as read if it's from the other user
       const lastMessage = processed[processed.length - 1];
       if (lastMessage && lastMessage.senderId !== user?.uid) {
         setLastReadMessageId(lastMessage.id);
@@ -116,7 +108,6 @@ const MessageList: React.FC<MessageListProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [formattedMessages, isTyping]);
 
-  // Group messages by date
   const messageGroups = groupMessagesByDate(formattedMessages);
   const dates = Object.keys(messageGroups).sort();
 

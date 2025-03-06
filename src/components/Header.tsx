@@ -5,7 +5,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, logoutUser } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageSquare, User, Settings, LogOut } from 'lucide-react';
+import { MessageCircle, User, Settings, LogOut, Hash } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,10 +62,11 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-gray-100">
+    <header className="sticky top-0 z-40 w-full bg-champagne/80 dark:bg-outerspace/90 backdrop-blur-md border-b border-gray-100 dark:border-outerspace-300">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link to="/chat" className="flex items-center space-x-2">
-          <span className="text-xl font-display font-bold text-primary">ConnectChat</span>
+          <Hash className="w-6 h-6 text-cherry" />
+          <span className="text-xl font-display font-bold text-outerspace dark:text-timberwolf">Pookies Banter Zone</span>
         </Link>
 
         <div className="flex items-center space-x-4">
@@ -74,9 +75,9 @@ const Header: React.FC = () => {
               <Button
                 variant={location.pathname === '/chat' ? 'default' : 'ghost'}
                 size="sm"
-                className="animate-enter"
+                className="animate-enter font-medium"
               >
-                <MessageSquare className="w-4 h-4 mr-2" />
+                <MessageCircle className="w-4 h-4 mr-2" />
                 Chat
               </Button>
             </Link>
@@ -84,7 +85,7 @@ const Header: React.FC = () => {
               <Button
                 variant={location.pathname === '/profile' ? 'default' : 'ghost'}
                 size="sm"
-                className="animate-enter"
+                className="animate-enter font-medium"
               >
                 <User className="w-4 h-4 mr-2" />
                 Profile
@@ -94,7 +95,7 @@ const Header: React.FC = () => {
               <Button
                 variant={location.pathname === '/settings' ? 'default' : 'ghost'}
                 size="sm"
-                className="animate-enter"
+                className="animate-enter font-medium"
               >
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
@@ -175,4 +176,3 @@ const Header: React.FC = () => {
 };
 
 export default Header;
-

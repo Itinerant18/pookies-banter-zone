@@ -100,6 +100,15 @@
   }
 }
 
+/* Custom Navbar Button Styles */
+.dark .navbar-button {
+  @apply text-timberwolf hover:bg-outerspace-600;
+}
+
+.navbar-button {
+  @apply text-outerspace font-medium hover:bg-champagne-400 dark:hover:bg-outerspace-600;
+}
+
 /* Custom Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 6px;

@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
@@ -6,65 +7,67 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;
+    /* Light Theme */
+    --background: 19 67% 91%;  /* Champagne Pink */
+    --foreground: 188 9% 32%;  /* Outer Space */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 45 15% 85%;  /* Timberwolf */
+    --card-foreground: 188 9% 32%;  /* Outer Space */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 45 15% 85%;  /* Timberwolf */
+    --popover-foreground: 188 9% 32%;  /* Outer Space */
 
-    --primary: 210 100% 50%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 351 63% 81%;  /* Cherry Blossom Pink */
+    --primary-foreground: 0 0% 100%;  /* White */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 123 14% 73%;  /* Ash Gray */
+    --secondary-foreground: 188 9% 32%;  /* Outer Space */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 45 15% 85%;  /* Timberwolf */
+    --muted-foreground: 188 9% 25%;  /* Darker Outer Space */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 123 14% 73%;  /* Ash Gray */
+    --accent-foreground: 188 9% 32%;  /* Outer Space */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84.2% 60.2%;  /* Keep original destructive */
+    --destructive-foreground: 210 40% 98%;  /* Keep original destructive foreground */
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 45 15% 85%;  /* Timberwolf */
+    --input: 45 15% 85%;  /* Timberwolf */
+    --ring: 351 63% 81%;  /* Cherry Blossom Pink */
 
     --radius: 1rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Dark Theme */
+    --background: 188 9% 32%;  /* Outer Space */
+    --foreground: 45 15% 85%;  /* Timberwolf */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 188 9% 25%;  /* Darker Outer Space */
+    --card-foreground: 45 15% 85%;  /* Timberwolf */
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 188 9% 25%;  /* Darker Outer Space */
+    --popover-foreground: 45 15% 85%;  /* Timberwolf */
 
-    --primary: 210 100% 50%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 351 63% 81%;  /* Cherry Blossom Pink */
+    --primary-foreground: 0 0% 100%;  /* White */
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 123 14% 73%;  /* Ash Gray */
+    --secondary-foreground: 45 15% 85%;  /* Timberwolf */
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 188 9% 25%;  /* Darker Outer Space */
+    --muted-foreground: 45 15% 70%;  /* Lighter Timberwolf */
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 123 14% 73%;  /* Ash Gray */
+    --accent-foreground: 45 15% 85%;  /* Timberwolf */
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;  /* Keep original destructive */
+    --destructive-foreground: 210 40% 98%;  /* Keep original destructive foreground */
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 188 9% 40%;  /* Slightly lighter Outer Space */
+    --input: 188 9% 40%;  /* Slightly lighter Outer Space */
+    --ring: 351 63% 81%;  /* Cherry Blossom Pink */
   }
 }
 
@@ -81,7 +84,7 @@
 
 @layer utilities {
   .glass-morph {
-    @apply bg-white/30 backdrop-blur-md border border-white/20;
+    @apply bg-champagne/30 backdrop-blur-md border border-timberwolf/20 dark:bg-outerspace-400/30 dark:border-timberwolf/10;
   }
   
   .glass-card {
@@ -107,11 +110,11 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 rounded-full;
+  @apply bg-ashgray rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400;
+  @apply bg-ashgray-400;
 }
 
 /* Page Transitions */
@@ -163,7 +166,7 @@
 }
 
 .dark .glass-card {
-  @apply bg-black/30 backdrop-blur-md border border-white/10;
+  @apply bg-outerspace-400/30 backdrop-blur-md border border-timberwolf/10;
 }
 
 .glass-card {
@@ -172,9 +175,9 @@
 
 /* Dark Mode Adjustments for Message Lists */
 .dark .glass-card .bg-blue-50 {
-  @apply bg-blue-900/30;
+  @apply bg-ashgray/30;
 }
 
 .dark .glass-card .bg-gray-50 {
-  @apply bg-gray-900/30;
+  @apply bg-outerspace-400/30;
 }

@@ -19,7 +19,7 @@ const Layout: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-black text-gray-900 dark:text-gray-100 theme-transition">
+    <div className="min-h-screen bg-gradient-to-b from-champagne to-white dark:from-outerspace dark:to-outerspace-400 text-outerspace dark:text-timberwolf theme-transition">
       {!loading && user && <Header />}
       <main className="w-full mx-auto px-4 sm:px-6 animate-fade-in">
         <Outlet />

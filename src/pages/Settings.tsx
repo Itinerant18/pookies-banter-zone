@@ -3,30 +3,16 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, logoutUser } from '@/lib/firebase';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Toggle } from '@/components/ui/toggle';
-import { Bell, Moon, LogOut } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Bell, Moon } from 'lucide-react';
 import { getUserProfile, updateUserSettings } from '@/lib/firebase/profile';
+
+// Import our new components
+import SettingsCard from '@/components/settings/SettingsCard';
+import SettingsToggle from '@/components/settings/SettingsToggle';
+import LogoutDialog from '@/components/settings/LogoutDialog';
+import LanguageDisplay from '@/components/settings/LanguageDisplay';
+import SettingsLoading from '@/components/settings/SettingsLoading';
 
 const Settings = () => {
   const [user, loading] = useAuthState(auth);
@@ -182,14 +168,7 @@ const Settings = () => {
   };
 
   if (loading || isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="h-12 w-48 bg-gray-300 rounded-lg mb-4"></div>
-          <div className="h-4 w-36 bg-gray-300 rounded-md"></div>
-        </div>
-      </div>
-    );
+    return <SettingsLoading />;
   }
 
   if (!user) {
@@ -198,94 +177,40 @@ const Settings = () => {
 
   return (
     <div className="w-full max-w-md mx-auto py-6 animate-fade-in">
-      <Card className="glass-card">
-        <CardHeader>
-          <CardTitle>Settings</CardTitle>
-          <CardDescription>
-            Customize your app experience
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            {/* Notifications Toggle */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Bell className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Notifications</p>
-                  <p className="text-xs text-muted-foreground">Receive app notifications</p>
-                </div>
-              </div>
-              <Toggle 
-                aria-label="Toggle notifications" 
-                pressed={notificationsEnabled}
-                onPressedChange={handleNotificationsToggle}
-              />
-            </div>
-            
-            {/* Dark Mode Toggle */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Moon className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Dark Mode</p>
-                  <p className="text-xs text-muted-foreground">Toggle dark mode on/off</p>
-                </div>
-              </div>
-              <Toggle 
-                aria-label="Toggle dark mode" 
-                pressed={darkModeEnabled}
-                onPressedChange={handleDarkModeToggle}
-              />
-            </div>
-            
-            {/* Language (Fixed to English) */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="h-5 w-5 flex items-center justify-center text-muted-foreground">
-                  <span className="text-sm">🇺🇸</span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Language</p>
-                  <p className="text-xs text-muted-foreground">English</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter className="flex-col space-y-2">
-          <AlertDialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" className="w-full">
-                <LogOut className="mr-2 h-4 w-4" />
-                Log out
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  You will need to sign in again to access your account.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleLogout}
-                  disabled={isLoggingOut}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  {isLoggingOut ? 'Logging out...' : 'Yes, log out'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          
-          <p className="text-center text-xs text-muted-foreground pt-2">
-            Connected as {user.email}
-          </p>
-        </CardFooter>
-      </Card>
+      <SettingsCard 
+        title="Settings" 
+        description="Customize your app experience"
+        footer={
+          <LogoutDialog
+            open={logoutDialogOpen}
+            onOpenChange={setLogoutDialogOpen}
+            onLogout={handleLogout}
+            isLoggingOut={isLoggingOut}
+            userEmail={user.email}
+          />
+        }
+      >
+        {/* Notifications Toggle */}
+        <SettingsToggle
+          icon={Bell}
+          title="Notifications"
+          description="Receive app notifications"
+          enabled={notificationsEnabled}
+          onToggle={handleNotificationsToggle}
+        />
+        
+        {/* Dark Mode Toggle */}
+        <SettingsToggle
+          icon={Moon}
+          title="Dark Mode"
+          description="Toggle dark mode on/off"
+          enabled={darkModeEnabled}
+          onToggle={handleDarkModeToggle}
+        />
+        
+        {/* Language (Fixed to English) */}
+        <LanguageDisplay />
+      </SettingsCard>
     </div>
   );
 };

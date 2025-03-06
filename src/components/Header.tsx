@@ -5,7 +5,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, logoutUser } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageCircle, User, Settings, LogOut, Hash } from 'lucide-react';
+import { MessageCircle, User, Settings, LogOut } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,7 +65,7 @@ const Header: React.FC = () => {
     <header className="sticky top-0 z-40 w-full bg-champagne/80 dark:bg-outerspace/90 backdrop-blur-md border-b border-gray-100 dark:border-outerspace-300">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link to="/chat" className="flex items-center space-x-2">
-          <Hash className="w-6 h-6 text-cherry" />
+          <img src="/hashtags.gif" alt="Logo" className="w-6 h-6" />
           <span className="text-xl font-display font-bold text-outerspace dark:text-timberwolf">Pookies Banter Zone</span>
         </Link>
 

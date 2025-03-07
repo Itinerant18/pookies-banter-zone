@@ -1,5 +1,6 @@
+
 import { User, updateProfile } from 'firebase/auth';
-import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, query, collection, where, getDocs } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from './config';
 
@@ -12,6 +13,7 @@ export interface UserProfile {
   interests?: string[];
   notificationsEnabled?: boolean;
   darkModeEnabled?: boolean;
+  username?: string;
 }
 
 export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
@@ -29,13 +31,48 @@ export const getUserProfile = async (userId: string): Promise<UserProfile | null
   }
 };
 
+export const isUsernameAvailable = async (username: string, currentUserId?: string): Promise<boolean> => {
+  try {
+    if (!username) return false;
+    
+    // Basic validation
+    if (username.length < 3 || username.length > 30) {
+      return false;
+    }
+    
+    // Check if username contains only allowed characters: letters, numbers, underscores
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      return false;
+    }
+    
+
+    const usersRef = collection(db, "users");
+    const usernameQuery = query(usersRef, where("username", "==", username));
+    const snapshot = await getDocs(usernameQuery);
+    
+    if (snapshot.empty) {
+      return true; // Username is available
+    }
+    
+    // If there's a match but it's the current user, username is still available
+    if (currentUserId && snapshot.docs.length === 1) {
+      return snapshot.docs[0].id === currentUserId;
+    }
+    
+    return false; // Username is taken
+  } catch (error) {
+    console.error("Error checking username availability: ", error);
+    throw error;
+  }
+};
+
 export const updateUserProfile = async (user: User, data: { displayName?: string, photoURL?: string | null }) => {
   try {
     console.log("Updating auth profile with:", data);
-    // Update auth profile
+
     await updateProfile(user, data);
     
-    // Update firestore profile
+
     const updateData: any = {};
     if (data.displayName) updateData.name = data.displayName;
     if (data.photoURL !== undefined) updateData.photoURL = data.photoURL;
@@ -54,16 +91,24 @@ export const updateCompleteUserProfile = async (user: User, profileData: UserPro
   try {
     console.log("Updating complete profile with data:", profileData);
     
-    // First check if the user document exists
+
+    if (profileData.username) {
+      const isAvailable = await isUsernameAvailable(profileData.username, user.uid);
+      if (!isAvailable) {
+        throw new Error("Username is already taken or invalid");
+      }
+    }
+    
+
     const userDoc = await getDoc(doc(db, "users", user.uid));
     
     if (userDoc.exists()) {
-      // Update existing document
+
       await updateDoc(doc(db, "users", user.uid), {
         ...profileData
       });
     } else {
-      // Create new document if it doesn't exist
+
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         ...profileData,
@@ -131,16 +176,16 @@ export const updateUserSettings = async (user: User, settings: {
   try {
     console.log("Updating user settings:", settings);
     
-    // Check if the user document exists
+
     const userDoc = await getDoc(doc(db, "users", user.uid));
     
     if (userDoc.exists()) {
-      // Update existing document
+
       await updateDoc(doc(db, "users", user.uid), {
         ...settings
       });
     } else {
-      // Create new document if it doesn't exist
+
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         ...settings,

@@ -7,8 +7,9 @@ import {
   signOut, 
   updateProfile
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp, query, collection, where, getDocs } from 'firebase/firestore';
 import { auth, db } from './config';
+import { isUsernameAvailable } from './profile';
 
 const googleProvider = new GoogleAuthProvider();
 
@@ -22,11 +23,31 @@ export const signInWithGoogle = async () => {
     
     if (!userDoc.exists()) {
       // Create user document if doesn't exist
+      // Generate a default username based on their name or email
+      let defaultUsername = '';
+      if (user.displayName) {
+        defaultUsername = user.displayName.toLowerCase().replace(/\s+/g, '_');
+      } else if (user.email) {
+        defaultUsername = user.email.split('@')[0];
+      }
+      
+      // Make sure username is unique
+      let username = defaultUsername;
+      let count = 1;
+      let isAvailable = await isUsernameAvailable(username);
+      
+      while (!isAvailable && count < 100) {
+        username = `${defaultUsername}${count}`;
+        isAvailable = await isUsernameAvailable(username);
+        count++;
+      }
+      
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         name: user.displayName,
         email: user.email,
         photoURL: user.photoURL,
+        username: isAvailable ? username : null, // Set username if available, otherwise null
         createdAt: serverTimestamp(),
         status: "online"
       });
@@ -52,12 +73,27 @@ export const registerWithEmail = async (email: string, password: string, display
     // Update profile with display name
     await updateProfile(user, { displayName });
     
+    // Generate default username from display name
+    const defaultUsername = displayName.toLowerCase().replace(/\s+/g, '_');
+    
+    // Make sure username is unique
+    let username = defaultUsername;
+    let count = 1;
+    let isAvailable = await isUsernameAvailable(username);
+    
+    while (!isAvailable && count < 100) {
+      username = `${defaultUsername}${count}`;
+      isAvailable = await isUsernameAvailable(username);
+      count++;
+    }
+    
     // Create user document
     await setDoc(doc(db, "users", user.uid), {
       uid: user.uid,
       name: displayName,
       email: user.email,
       photoURL: null,
+      username: isAvailable ? username : null, // Set username if available, otherwise null
       createdAt: serverTimestamp(),
       status: "online"
     });
@@ -74,7 +110,7 @@ export const loginWithEmail = async (email: string, password: string) => {
     const result = await signInWithEmailAndPassword(auth, email, password);
     const user = result.user;
     
-    // Update user status
+
     await updateDoc(doc(db, "users", user.uid), {
       status: "online"
     });
@@ -91,7 +127,7 @@ export const logoutUser = async () => {
     const user = auth.currentUser;
     
     if (user) {
-      // Update user status before signing out
+
       await updateDoc(doc(db, "users", user.uid), {
         status: "offline"
       });

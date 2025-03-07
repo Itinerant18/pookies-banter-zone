@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Circle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
 
 interface User {
   uid: string;
@@ -17,6 +18,7 @@ interface User {
   photoURL: string | null;
   status: 'online' | 'offline';
   lastActive?: any;
+  username?: string;
 }
 
 interface UsersListProps {
@@ -28,6 +30,7 @@ const UsersList: React.FC<UsersListProps> = ({ onSelectUser }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [searchMode, setSearchMode] = useState<'name' | 'username'>('name');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -102,21 +105,45 @@ const UsersList: React.FC<UsersListProps> = ({ onSelectUser }) => {
     };
   }, [user, toast]);
 
-  // Filter users based on search term
-  const filteredUsers = users.filter(user => 
-    user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Handle direct username search
+  const handleUsernameSearch = () => {
+    if (searchTerm.startsWith('@')) {
+      setSearchMode('username');
+    } else {
+      setSearchMode('name');
+    }
+  };
+
+  // Filter users based on search term and search mode
+  const filteredUsers = users.filter(user => {
+    if (!searchTerm) return true;
+    
+    if (searchMode === 'username' && searchTerm.startsWith('@')) {
+      const searchUsername = searchTerm.substring(1).toLowerCase();
+      return user.username && user.username.toLowerCase() === searchUsername;
+    } else {
+      return user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase());
+    }
+  });
 
   return (
     <Card className="p-4 glass-card h-full">
       <div className="mb-4 relative">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search users..."
+          placeholder="Search by name or @username"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            handleUsernameSearch();
+          }}
           className="pl-9"
         />
+        {searchTerm.startsWith('@') && (
+          <div className="mt-1 text-xs text-muted-foreground">
+            Searching for exact username match
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -132,7 +159,16 @@ const UsersList: React.FC<UsersListProps> = ({ onSelectUser }) => {
         </div>
       ) : filteredUsers.length === 0 ? (
         <div className="text-center my-8 text-muted-foreground">
-          {searchTerm ? "No users found matching your search" : "No users available"}
+          {searchTerm ? (
+            <>
+              <p className="mb-2">No users found matching your search</p>
+              {searchMode === 'username' && (
+                <p className="text-sm">Check that you've entered the exact username including the @ symbol</p>
+              )}
+            </>
+          ) : (
+            "No users available"
+          )}
         </div>
       ) : (
         <ScrollArea className="h-[400px]">
@@ -151,6 +187,9 @@ const UsersList: React.FC<UsersListProps> = ({ onSelectUser }) => {
                 </Avatar>
                 <div className="flex-1">
                   <div className="font-medium">{userItem.name || 'Anonymous'}</div>
+                  {userItem.username && (
+                    <div className="text-xs text-muted-foreground">@{userItem.username}</div>
+                  )}
                 </div>
                 <div className="flex items-center">
                   <Circle 

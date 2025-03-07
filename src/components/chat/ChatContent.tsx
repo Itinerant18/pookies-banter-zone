@@ -39,6 +39,7 @@ const ChatContent: React.FC = () => {
           messages={messages} 
           isTyping={isRecipientTyping}
           recipientId={matchedUser.uid}
+          chatRoomId={chatRoomId}
         />
       </Card>
 

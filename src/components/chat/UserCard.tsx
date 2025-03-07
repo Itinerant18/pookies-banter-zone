@@ -11,6 +11,7 @@ interface UserCardProps {
     name?: string;
     photoURL?: string;
     status?: string;
+    username?: string;
   };
   onNewChat: () => void;
   buttonLabel?: string;
@@ -36,7 +37,10 @@ const UserCard: React.FC<UserCardProps> = ({
         </Avatar>
         <div className="flex-1">
           <h3 className="text-lg font-medium">{user.name || 'Anonymous'}</h3>
-          <div className="flex items-center text-xs">
+          {user.username && (
+            <div className="text-sm text-muted-foreground">@{user.username}</div>
+          )}
+          <div className="flex items-center text-xs mt-1">
             <Circle 
               className={`w-3 h-3 mr-1 ${isOnline ? 'text-green-500 fill-green-500' : 'text-gray-400 fill-gray-400'}`}
             />

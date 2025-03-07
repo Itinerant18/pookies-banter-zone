@@ -80,7 +80,7 @@ const Header: React.FC = () => {
                 <img
                   src="/messages.png"
                   alt="Profile"
-                  className="w-6 h-6 mr-2"
+                  className="w-6 h-6 "
                 />
                 Chat
               </Button>
@@ -94,7 +94,7 @@ const Header: React.FC = () => {
                 <img
                   src="/user 2.o.png"
                   alt="Profile"
-                  className="w-5 h-5 mr-2"
+                  className="w-6 h-6"
                 />
                 Profile
               </Button>
@@ -110,7 +110,7 @@ const Header: React.FC = () => {
                 <img
                   src="/settings.png"
                   alt="Profile"
-                  className="w-6 h-6 mr-2"
+                  className="w-6 h-6"
                 />
                 Settings
               </Button>

@@ -1,5 +1,7 @@
 # Welcome to your Lovable project
 
+# account is karmakaraniket018@gmail.com
+
 ## Project info
 
 **URL**: https://lovable.dev/projects/42839644-292f-404a-b334-91de68c3dbba

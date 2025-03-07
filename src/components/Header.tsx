@@ -80,7 +80,7 @@ const Header: React.FC = () => {
                 <img
                   src="/messages.png"
                   alt="Profile"
-                  className="w-6 h-6 "
+                  className="w-6 h-6"
                 />
                 Chat
               </Button>

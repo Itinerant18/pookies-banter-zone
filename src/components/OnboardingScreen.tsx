@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -16,18 +17,21 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 import { registerWithEmail, loginWithEmail, signInWithGoogle } from '@/lib/firebase/auth';
 
 // Form schema
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
+  rememberMe: z.boolean().default(true),
 });
 
 const registerSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
   email: z.string().email({ message: 'Please enter a valid email address' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
+  rememberMe: z.boolean().default(true),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -44,6 +48,7 @@ const OnboardingScreen: React.FC = () => {
     defaultValues: {
       email: '',
       password: '',
+      rememberMe: true,
     },
   });
 
@@ -54,13 +59,14 @@ const OnboardingScreen: React.FC = () => {
       name: '',
       email: '',
       password: '',
+      rememberMe: true,
     },
   });
 
   const onLoginSubmit = async (data: LoginFormValues) => {
     try {
       setIsLoading(true);
-      await loginWithEmail(data.email, data.password);
+      await loginWithEmail(data.email, data.password, data.rememberMe);
       navigate('/chat');
     } catch (error: any) {
       toast({
@@ -76,7 +82,7 @@ const OnboardingScreen: React.FC = () => {
   const onRegisterSubmit = async (data: RegisterFormValues) => {
     try {
       setIsLoading(true);
-      await registerWithEmail(data.email, data.password, data.name);
+      await registerWithEmail(data.email, data.password, data.name, data.rememberMe);
       navigate('/chat');
     } catch (error: any) {
       toast({
@@ -92,7 +98,12 @@ const OnboardingScreen: React.FC = () => {
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
-      await signInWithGoogle();
+      // Use the remember me value from the current active form
+      const rememberMe = Tabs.getCurrentValue() === 'login' 
+        ? loginForm.getValues().rememberMe 
+        : registerForm.getValues().rememberMe;
+      
+      await signInWithGoogle(rememberMe);
       navigate('/chat');
     } catch (error: any) {
       toast({
@@ -109,10 +120,7 @@ const OnboardingScreen: React.FC = () => {
     <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12 animate-fade-in">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-<h1 className="text-4xl font-display font-bold bg-gradient-to-t from-cherry-200 to-cherry-600 text-transparent bg-clip-text animate-slide-down">Pookie's Banter Zone</h1>
-
-  
-         
+          <h1 className="text-4xl font-display font-bold bg-gradient-to-t from-cherry-200 to-cherry-600 text-transparent bg-clip-text animate-slide-down">Pookie's Banter Zone</h1>
           <p className="mt-3 text-lg text-gray-900 max-w-sm mx-auto animate-slide-down">Connect With Your Pookie Around The Corner</p>
         </div>
 
@@ -154,6 +162,13 @@ const OnboardingScreen: React.FC = () => {
                     {loginForm.formState.errors.password && (
                       <p className="text-sm text-red-500">{loginForm.formState.errors.password.message}</p>
                     )}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="remember-me-login" 
+                      {...loginForm.register('rememberMe')} 
+                    />
+                    <Label htmlFor="remember-me-login" className="text-sm font-normal">Remember me</Label>
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col space-y-4">
@@ -243,6 +258,13 @@ const OnboardingScreen: React.FC = () => {
                     {registerForm.formState.errors.password && (
                       <p className="text-sm text-red-500">{registerForm.formState.errors.password.message}</p>
                     )}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="remember-me-register" 
+                      {...registerForm.register('rememberMe')} 
+                    />
+                    <Label htmlFor="remember-me-register" className="text-sm font-normal">Remember me</Label>
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col space-y-4">

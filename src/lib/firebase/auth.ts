@@ -5,16 +5,36 @@ import {
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
   signOut, 
-  updateProfile
+  updateProfile,
+  browserSessionPersistence,
+  browserLocalPersistence,
+  setPersistence
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc, serverTimestamp, query, collection, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, query, collection, where, getDocs } from 'firebase/firestore';
 import { auth, db } from './config';
-import { isUsernameAvailable } from './profile';
+import { isUsernameAvailable, setUserOnline, setUserOffline } from './profile';
 
 const googleProvider = new GoogleAuthProvider();
 
-export const signInWithGoogle = async () => {
+/**
+ * Sets the persistence mode for Firebase Auth
+ * @param rememberMe Whether to persist the session beyond a browser restart
+ */
+export const setAuthPersistence = async (rememberMe: boolean = true) => {
   try {
+    const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
+    await setPersistence(auth, persistenceType);
+  } catch (error) {
+    console.error("Error setting auth persistence:", error);
+    // Don't throw here - this is a non-critical operation
+  }
+};
+
+export const signInWithGoogle = async (rememberMe: boolean = true) => {
+  try {
+    // Set persistence before login
+    await setAuthPersistence(rememberMe);
+    
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
     
@@ -49,13 +69,12 @@ export const signInWithGoogle = async () => {
         photoURL: user.photoURL,
         username: isAvailable ? username : null, // Set username if available, otherwise null
         createdAt: serverTimestamp(),
+        lastActive: serverTimestamp(),
         status: "online"
       });
     } else {
-      // Update user status
-      await updateDoc(doc(db, "users", user.uid), {
-        status: "online"
-      });
+      // Update user status using our new utility
+      await setUserOnline();
     }
     
     return user;
@@ -65,8 +84,11 @@ export const signInWithGoogle = async () => {
   }
 };
 
-export const registerWithEmail = async (email: string, password: string, displayName: string) => {
+export const registerWithEmail = async (email: string, password: string, displayName: string, rememberMe: boolean = true) => {
   try {
+    // Set persistence before registration
+    await setAuthPersistence(rememberMe);
+    
     const result = await createUserWithEmailAndPassword(auth, email, password);
     const user = result.user;
     
@@ -95,6 +117,7 @@ export const registerWithEmail = async (email: string, password: string, display
       photoURL: null,
       username: isAvailable ? username : null, // Set username if available, otherwise null
       createdAt: serverTimestamp(),
+      lastActive: serverTimestamp(),
       status: "online"
     });
     
@@ -105,15 +128,16 @@ export const registerWithEmail = async (email: string, password: string, display
   }
 };
 
-export const loginWithEmail = async (email: string, password: string) => {
+export const loginWithEmail = async (email: string, password: string, rememberMe: boolean = true) => {
   try {
+    // Set persistence before login
+    await setAuthPersistence(rememberMe);
+    
     const result = await signInWithEmailAndPassword(auth, email, password);
     const user = result.user;
     
-
-    await updateDoc(doc(db, "users", user.uid), {
-      status: "online"
-    });
+    // Update user status using our new utility
+    await setUserOnline();
     
     return user;
   } catch (error) {
@@ -124,18 +148,16 @@ export const loginWithEmail = async (email: string, password: string) => {
 
 export const logoutUser = async () => {
   try {
-    const user = auth.currentUser;
+    // Update status before signing out
+    await setUserOffline();
     
-    if (user) {
-
-      await updateDoc(doc(db, "users", user.uid), {
-        status: "offline"
-      });
-    }
-    
+    // Sign out after status update
     await signOut(auth);
+    
+    return true;
   } catch (error) {
     console.error("Error signing out: ", error);
     throw error;
   }
 };
+

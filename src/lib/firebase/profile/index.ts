@@ -6,3 +6,5 @@ export * from './username';
 export * from './update';
 export * from './photo';
 export * from './settings';
+export * from './status';
+

@@ -16,7 +16,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ onFindMatch }) => {
     <Card className="glass-card overflow-hidden animate-fade-in theme-transition">
       <CardContent className="p-6 pt-6 flex flex-col items-center space-y-4">
         <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-full theme-transition">
-          <Users className="h-12 w-12 text-primary" />
+          <img src="/Start Chatting.png" alt="User Icon" className="h-16 w-16" />
         </div>
         <h3 className="text-2xl font-semibold tracking-tight">Start Chatting</h3>
         <p className="text-center text-muted-foreground">

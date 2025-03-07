@@ -75,12 +75,13 @@ const Header: React.FC = () => {
               <Button
                 variant={location.pathname === "/chat" ? "default" : "ghost"}
                 size="sm"
-                className="animate-enter font-medium">
-              <img
-                        src="/messages.png"
-                        alt="Profile"
-                        className="w-6 h-6 mr-2"
-                      />
+                className="animate-enter font-medium"
+              >
+                <img
+                  src="/messages.png"
+                  alt="Profile"
+                  className="w-6 h-6 mr-2"
+                />
                 Chat
               </Button>
             </Link>
@@ -88,12 +89,13 @@ const Header: React.FC = () => {
               <Button
                 variant={location.pathname === "/profile" ? "default" : "ghost"}
                 size="sm"
-                className="animate-enter font-medium">
+                className="animate-enter font-medium"
+              >
                 <img
-                        src="/user 2.o.png"
-                        alt="Profile"
-                        className="w-5 h-5 mr-2"
-                      />
+                  src="/user 2.o.png"
+                  alt="Profile"
+                  className="w-5 h-5 mr-2"
+                />
                 Profile
               </Button>
             </Link>
@@ -106,10 +108,10 @@ const Header: React.FC = () => {
                 className="animate-enter font-medium"
               >
                 <img
-                        src="/settings.png"
-                        alt="Profile"
-                        className="w-6 h-6 mr-2"
-                      />
+                  src="/settings.png"
+                  alt="Profile"
+                  className="w-6 h-6 mr-2"
+                />
                 Settings
               </Button>
             </Link>
@@ -161,7 +163,7 @@ const Header: React.FC = () => {
                   <DropdownMenuItem asChild>
                     <Link to="/settings" className="cursor-pointer">
                       <img
-                        src="/settings.png"
+                        src="/setting 2.o.png"
                         alt="Profile"
                         className="w-4 h-4 mr-2"
                       />

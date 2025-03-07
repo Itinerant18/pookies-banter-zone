@@ -65,8 +65,8 @@ const Header: React.FC = () => {
     <header className="sticky top-0 z-40 w-full bg-champagne/80 dark:bg-outerspace/90 backdrop-blur-md border-b border-gray-100 dark:border-outerspace-300">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link to="/chat" className="flex items-center space-x-2">
-          <img src="/hashtags.gif" alt="Logo" className="w-9 h-9"/>
-<span className="text-4xl font-display font-bold bg-gradient-to-b from-cherry-200 to-cherry-600 text-transparent bg-clip-text animate-slide-down">Pookie's Banter Zone</span>
+          <img src="/hashtags.gif" alt="Logo" className="w-9 h-9" />
+          <span className="text-4xl font-display font-bold bg-gradient-to-b from-cherry-200 to-cherry-600 text-transparent bg-clip-text animate-slide-down">Pookie's Banter Zone</span>
         </Link>
 
         <div className="flex items-center space-x-4">
@@ -125,23 +125,23 @@ const Header: React.FC = () => {
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/profile" className="cursor-pointer">
-                      <User className="w-4 h-4 mr-2" />
+                    <Link to="/profile" className="cursor-pointer flex items-center">
+                      <img src="/user.png" alt="Profile" className="w-4 h-4 mr-2" />
                       Profile
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/settings" className="cursor-pointer">
-                      <Settings className="w-4 h-4 mr-2" />
+                      <img src="/settings.png" alt="Profile" className="w-4 h-4 mr-2" />
                       Settings
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    onClick={() => setLogoutDialogOpen(true)} 
+                  <DropdownMenuItem
+                    onClick={() => setLogoutDialogOpen(true)}
                     className="text-red-500 focus:bg-red-50 focus:text-red-500 cursor-pointer"
                   >
-                    <LogOut className="w-4 h-4 mr-2" />
+                    <img src="/Logout.png" alt="Profile" className="w-4 h-4 mr-2" />
                     Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>

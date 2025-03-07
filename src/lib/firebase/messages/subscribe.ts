@@ -1,9 +1,8 @@
-
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../config';
 import { Message } from './types';
 
-export const subscribeToMessages = (chatRoomId: string, callback: (messages: Message[]) => void) => {
+export const subscribeToMessages = (chatRoomId: string, currentUserId: string, callback: (messages: Message[]) => void) => {
   try {
     console.log(`Setting up subscription for chat room: ${chatRoomId}`);
     
@@ -24,22 +23,32 @@ export const subscribeToMessages = (chatRoomId: string, callback: (messages: Mes
         console.log("Warning: Data is from cache only, might not be up-to-date");
       }
       
-      const messages = snapshot.docs.map(doc => {
-        const data = doc.data();
-        console.log(`Message data for ${doc.id}:`, data);
-        
-        // Ensure status is one of the valid types
-        let status: 'sending' | 'sent' | 'delivered' | 'read' = 'sent';
-        if (data.status && ['sending', 'sent', 'delivered', 'read'].includes(data.status)) {
-          status = data.status as 'sending' | 'sent' | 'delivered' | 'read';
-        }
-        
-        return {
-          id: doc.id,
-          ...data,
-          status
-        } as Message;
-      });
+      const messages = snapshot.docs
+        .map(doc => {
+          const data = doc.data();
+          console.log(`Message data for ${doc.id}:`, data);
+          
+          // Ensure status is one of the valid types
+          let status: 'sending' | 'sent' | 'delivered' | 'read' = 'sent';
+          if (data.status && ['sending', 'sent', 'delivered', 'read'].includes(data.status)) {
+            status = data.status as 'sending' | 'sent' | 'delivered' | 'read';
+          }
+          
+          return {
+            id: doc.id,
+            ...data,
+            status
+          } as Message;
+        })
+        // Filter out messages that are deleted for the current user
+        .filter(msg => {
+          // If deleted for everyone, keep it (we'll display a placeholder)
+          if (msg.deletedForEveryone) return true;
+          
+          // If deleted for this user specifically, filter it out
+          const deletedForUsers = msg.deletedForUsers || [];
+          return !deletedForUsers.includes(currentUserId);
+        });
       
       console.log(`Live update: Received ${messages.length} messages for room ${chatRoomId}`);
       console.log("Live message data:", messages);

@@ -9,6 +9,9 @@ export interface Message {
   message: string;
   timestamp: any;
   status: 'sending' | 'sent' | 'delivered' | 'read';
+  deletedForUsers?: string[]; // Array of user IDs for whom the message is deleted
+  deletedForEveryone?: boolean; // Flag indicating if the message is deleted for everyone
+  deletedAt?: any; // Timestamp when the message was deleted
 }
 
 export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read';

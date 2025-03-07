@@ -25,13 +25,13 @@ export function useChatSubscriptions(
 
   // Subscribe to messages when chat room changes
   useEffect(() => {
-    if (!chatRoomId) return;
+    if (!chatRoomId || !user) return;
     
     console.log("Subscribing to messages in room:", chatRoomId);
     
     // Add a delay to ensure Firestore has time to process the chat room creation
     const timer = setTimeout(() => {
-      const unsubscribe = subscribeToMessages(chatRoomId, (newMessages) => {
+      const unsubscribe = subscribeToMessages(chatRoomId, user.uid, (newMessages) => {
         console.log("Message update received, count:", newMessages.length);
         
         // Check if we have any messages with null or undefined timestamp
@@ -59,7 +59,7 @@ export function useChatSubscriptions(
     return () => {
       clearTimeout(timer);
     };
-  }, [chatRoomId, indexingError, setMessages, setIndexingError]);
+  }, [chatRoomId, user, indexingError, setMessages, setIndexingError]);
 
   // Subscribe to typing status
   useEffect(() => {

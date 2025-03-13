@@ -2,7 +2,10 @@
 
 A modern real-time chat application that connects users randomly or allows them to select specific users to chat with. Built with React, TypeScript, and Firebase.
 
-![Pookie's Banter Zone](https://lovable.dev/projects/42839644-292f-404a-b334-91de68c3dbba/preview.png)
+(![screencapture-192-168-0-62-8080-2025-03-13-09_44_20](https://github.com/user-attachments/assets/857e623d-b53e-4330-bcec-c44540dfac0b)
+![screencapture-pookies-banter-zone-netlify-app-2025-03-13-09_48_14](https://github.com/user-attachments/assets/f646fcb5-d36b-4b8f-8729-113173e3daf0)
+
+
 
 **Live Demo**: [https://pookies-banter-zone.netlify.app/](https://pookies-banter-zone.netlify.app/)
 

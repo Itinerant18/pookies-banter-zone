@@ -10,9 +10,7 @@ It’ll include:
 
 Here’s your **final GitHub-optimized README** (you can directly copy–paste into your `README.md` file):
 
----
 
-````markdown
 # 🎭 Pookie's Banter Zone  
 
 **A Real-Time Chat Platform for Fun, Friendship & Conversations**
@@ -298,3 +296,4 @@ Would you like me to:
 - 📘 Add a **project architecture diagram (image or mermaid chart)** for GitHub?  
 - 📄 Or prepare a **PDF version** (with screenshots and sections) for your portfolio submission too?
 ```
+

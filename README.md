@@ -291,9 +291,5 @@ See [LICENSE](./LICENSE) for more information.
 ```
 
 
-Would you like me to:
-- 📘 Add a **project architecture diagram (image or mermaid chart)** for GitHub?  
-- 📄 Or prepare a **PDF version** (with screenshots and sections) for your portfolio submission too?
-```
 
 

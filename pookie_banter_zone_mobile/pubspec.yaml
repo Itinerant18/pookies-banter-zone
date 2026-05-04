@@ -1,0 +1,32 @@
+
+name: pookie_banter_zone_mobile
+description: "A new Flutter project."
+publish_to: 'none' 
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.2
+  firebase_core: ^2.13.0
+  firebase_auth: ^4.6.1
+  cloud_firestore: ^4.8.0
+  flutter_riverpod: ^2.3.6
+  routemaster: ^1.0.1
+  google_fonts: ^4.0.4
+  intl: ^0.18.1
+  image_picker: ^1.0.4
+  firebase_storage: ^11.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true

@@ -77,8 +77,13 @@ const UsersList: React.FC<UsersListProps> = ({ onSelectUser }) => {
           uid: doc.data().uid || doc.id
         }));
         
-        console.log('Fetched users:', usersList);
-        setUsers(usersList);
+        // Deduplicate users by UID
+        const uniqueUsers = usersList.filter((user, index, self) =>
+          index === self.findIndex((u) => u.uid === user.uid)
+        );
+        
+        console.log('Fetched users:', uniqueUsers);
+        setUsers(uniqueUsers);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching users:', error);

@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "841500116943",
+    "firebase_url": "https://pookies-bunter-zone-ak-up-default-rtdb.firebaseio.com",
+    "project_id": "pookies-bunter-zone-ak-up",
+    "storage_bucket": "pookies-bunter-zone-ak-up.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:841500116943:android:d1f1acae8ae3cb74e474ba",
+        "android_client_info": {
+          "package_name": "com.pookie.pookie_banter_zone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "841500116943-iaedpj48g160b7ahcofeaf9tkld59ve6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDp6Yfs1-zRaGxwpF2KyidJ6d9wtRLkSlE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "841500116943-iaedpj48g160b7ahcofeaf9tkld59ve6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

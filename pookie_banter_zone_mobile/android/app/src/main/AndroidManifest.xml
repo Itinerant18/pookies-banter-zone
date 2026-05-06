@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="pookie_banter_zone_mobile"
+        android:label="Pookie's Banter Zone"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

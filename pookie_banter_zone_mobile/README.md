@@ -1,16 +1,60 @@
-# pookie_banter_zone_mobile
+# Pookie's Banter Zone - Flutter
 
-A new Flutter project.
+A real-time chat application built with Flutter, matching the web application functionality.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- Email/Password & Google Sign-In authentication
+- Real-time messaging with Firestore
+- User profiles with interests, bio, and photo
+- Random user matching system
+- Light/Dark theme toggle
+- Typing indicators and read receipts
+- Message deletion (for me / for everyone)
 
-A few resources to get you started if this is your first Flutter project:
+## Firebase Setup
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+This app reuses the existing Firebase project from the web application.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Android
+
+1. Download `google-services.json` from Firebase Console
+2. Place it in `android/app/google-services.json`
+
+### iOS
+
+1. Download `GoogleService-Info.plist` from Firebase Console
+2. Place it in `ios/Runner/GoogleService-Info.plist`
+3. Update `CFBundleURLSchemes` in `ios/Runner/Info.plist` with your actual Google client ID
+
+## Running the App
+
+```bash
+flutter pub get
+flutter run
+```
+
+## Build
+
+```bash
+# Android
+flutter build apk --release
+
+# iOS
+flutter build ios --release
+
+# Web
+flutter build web
+```
+
+## Project Structure
+
+```
+lib/
+├── main.dart              # Entry point with Firebase init
+├── app.dart               # MaterialApp with Provider setup
+├── core/                  # Constants, theme, utils
+├── data/                  # Models, repositories, Firebase service
+├── presentation/          # Providers, screens, widgets
+└── router/                # GoRouter configuration
+```
